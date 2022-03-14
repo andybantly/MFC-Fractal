@@ -1,0 +1,104 @@
+// Copyright (C) 2012-2016 Andrew S. Bantly
+//
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation; version 2 of the License.
+
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+// You should have received a copy of the GNU General Public License along
+// with this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+import "oaidl.idl";
+import "ocidl.idl";
+[ 
+	uuid(19688AA8-277F-4932-8F1A-E9C491AC13A4), 
+	version(1.0),
+	helpstring("Fractal 1.0 Type Library") 
+]
+library FractalLib
+{
+	importlib("stdole32.tlb");
+	importlib("stdole2.tlb");
+
+	//  Primary dispatch interface for CFractalDoc
+	
+	// UUID of the Document
+	[ uuid(76900ADC-BD0F-4e83-825D-96CF4DCC4D1C) ]
+	dispinterface IFractalDoc
+	{
+		properties:
+			[id(1), helpstring("property XMin")] DOUBLE XMin;
+			[id(2), helpstring("property XMax")] DOUBLE XMax;
+			[id(3), helpstring("property YMin")] DOUBLE YMin;
+			[id(4), helpstring("property YMax")] DOUBLE YMax;
+			[id(5), helpstring("property P")] DOUBLE P;
+			[id(6), helpstring("property Q")] DOUBLE Q;
+			[id(7), helpstring("property Width")] LONG Width;
+			[id(8), helpstring("property Height")] LONG Height;
+			[id(9), helpstring("property Mode")] LONG Mode;
+			[id(10), helpstring("property Iterations")] LONG Iterations;
+			[id(11), helpstring("property MaxCalc")] LONG MaxCalc;
+			[id(12), helpstring("property Red")] VARIANT_BOOL Red;
+			[id(13), helpstring("property Green")] VARIANT_BOOL Green;
+			[id(14), helpstring("property Blue")] VARIANT_BOOL Blue;
+			[id(15), helpstring("property DropUnused")] VARIANT_BOOL DropUnused;
+			[id(16), helpstring("property Smooth")] VARIANT_BOOL Smooth;
+			[id(17), helpstring("property SortOrder")] VARIANT_BOOL SortOrder;
+			[id(18), helpstring("property Gradient")] VARIANT_BOOL Gradient;
+			[id(19), helpstring("property Base")] VARIANT_BOOL Base;
+			[id(20), helpstring("property BaseColor")] VARIANT_BOOL BaseColor;
+			[id(21), helpstring("property OrbitColor")] VARIANT_BOOL OrbitColor;
+			[id(22), helpstring("property RGB1")] ULONG RGB1;
+			[id(23), helpstring("property RGB2")] ULONG RGB2;
+			[id(24), helpstring("property RGB3")] ULONG RGB3;
+			[id(25), helpstring("property RGB4")] ULONG RGB4;
+			[id(26), helpstring("property RGB5")] ULONG RGB5;
+			[id(27), helpstring("property RGB6")] ULONG RGB6;
+			[id(28), helpstring("property RGBBase")] ULONG RGBBase;
+			[id(29), helpstring("property RR")] LONG RR;
+			[id(30), helpstring("property RG")] LONG RG;
+			[id(31), helpstring("property RB")] LONG RB;
+			[id(32), helpstring("property Step")] DOUBLE Step;
+			[id(33), helpstring("property RGBStepColor")] ULONG RGBStepColor;
+			[id(34), helpstring("property Image")] BSTR Image;
+			[id(35), helpstring("property UseImage")] VARIANT_BOOL UseImage;
+			[id(36), helpstring("property Image2")] BSTR Image2;
+			[id(37), helpstring("property UseImage2")] VARIANT_BOOL UseImage2;
+			[id(38), helpstring("property FractalType")] LONG FractalType;
+			[id(39), helpstring("property Alpha")] LONG Alpha;
+			[id(40), helpstring("property Alpha2")] LONG Alpha2;
+			[id(41), helpstring("property BlendBase")] VARIANT_BOOL BlendBase;
+			[id(42), helpstring("property BlendFractal")] VARIANT_BOOL BlendFractal;
+			[id(43), helpstring("property FileName")] BSTR FileName;
+			[id(44), helpstring("property XScale")] DOUBLE XScale;
+			[id(45), helpstring("property YScale")] DOUBLE YScale;
+			[id(46), helpstring("property BailRadius")] DOUBLE BailRadius;
+			[id(47), helpstring("property TrapX")] VARIANT_BOOL TrapX;
+			[id(48), helpstring("property TrapXValue")] DOUBLE TrapXValue;
+			[id(49), helpstring("property TrapY")] VARIANT_BOOL TrapY;
+			[id(50), helpstring("property TrapYValue")] DOUBLE TrapYValue;
+			[id(51), helpstring("property GCR")] VARIANT_BOOL GCR;
+			[id(52), helpstring("property GCRValue")] DOUBLE GCRValue;
+			[id(53), helpstring("property GCG")] VARIANT_BOOL GCG;
+			[id(54), helpstring("property GCGValue")] DOUBLE GCGValue;
+			[id(55), helpstring("property GCB")] VARIANT_BOOL GCB;
+			[id(56), helpstring("property GCBValue")] DOUBLE GCBValue;
+			[id(57), helpstring("property Picture")] IPictureDisp * Picture;
+
+		methods:
+			[id(58), helpstring("method Render")] void Render();
+	};
+
+	//  Class information for CFractalDoc
+	
+	[ uuid(5446301F-C657-4852-98EB-18FFBB64E136) ]
+	coclass CFractalDoc
+	{
+		[default] dispinterface IFractalDoc;
+	};
+};
+

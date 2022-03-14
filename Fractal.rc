@@ -1,0 +1,831 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#ifndef APSTUDIO_INVOKED
+#include "targetver.h"
+#endif
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// English (United States) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#ifndef APSTUDIO_INVOKED\r\n"
+    "#include ""targetver.h""\r\n"
+    "#endif\r\n"
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "#define _AFX_NO_OLE_RESOURCES\r\n"
+    "#define _AFX_NO_TRACKER_RESOURCES\r\n"
+    "#define _AFX_NO_PROPERTY_RESOURCES\r\n"
+    "\r\n"
+    "#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)\r\n"
+    "LANGUAGE 9, 1\r\n"
+    "#pragma code_page(1252)\r\n"
+    "#include ""res\\Fractal.rc2""  // non-Microsoft Visual C++ edited resources\r\n"
+    "#include ""afxres.rc""         // Standard components\r\n"
+    "#include ""afxprint.rc""       // printing/print preview resources\r\n"
+    "#endif\r\n"
+    "\r\n"
+    "1 TYPELIB ""Fractal.tlb\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDR_MAINFRAME           ICON                    "res\\Fractal.ico"
+
+IDR_FractalTYPE         ICON                    "res\\FractalDoc.ico"
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Menu
+//
+
+IDR_MAINFRAME MENU
+BEGIN
+    POPUP "&File"
+    BEGIN
+        MENUITEM "&New\tCtrl+N",                ID_FILE_NEW
+        MENUITEM "&Open...\tCtrl+O",            ID_FILE_OPEN
+        MENUITEM "&Close",                      ID_FILE_CLOSE
+        MENUITEM SEPARATOR
+        MENUITEM "P&rint Setup...",             ID_FILE_PRINT_SETUP
+        MENUITEM SEPARATOR
+        MENUITEM "Recent File",                 ID_FILE_MRU_FILE1, GRAYED
+        MENUITEM SEPARATOR
+        MENUITEM "E&xit",                       ID_APP_EXIT
+    END
+    POPUP "&Help"
+    BEGIN
+        MENUITEM "&About Fractal...",           ID_APP_ABOUT
+    END
+END
+
+IDR_FractalTYPE MENU
+BEGIN
+    POPUP "&File"
+    BEGIN
+        MENUITEM "&New",                        ID_FILE_NEW
+        MENUITEM "&Open...\tCtrl+O",            ID_FILE_OPEN
+        MENUITEM "&Close",                      ID_FILE_CLOSE
+        MENUITEM "&Save\tCtrl+S",               ID_FILE_SAVE
+        MENUITEM "Save &As...",                 ID_FILE_SAVE_AS
+        MENUITEM SEPARATOR
+        MENUITEM "&Print...\tCtrl+P",           ID_FILE_PRINT
+        MENUITEM "Print Pre&view",              ID_FILE_PRINT_PREVIEW
+        MENUITEM "P&rint Setup...",             ID_FILE_PRINT_SETUP
+        MENUITEM SEPARATOR
+        MENUITEM "Recent File",                 ID_FILE_MRU_FILE1
+        MENUITEM SEPARATOR
+        MENUITEM "E&xit",                       ID_APP_EXIT
+    END
+    POPUP "&Edit"
+    BEGIN
+        MENUITEM "&Copy\tCtrl+C",               ID_EDIT_COPY
+        MENUITEM SEPARATOR
+        POPUP "Color Bleed"
+        BEGIN
+            MENUITEM "Up",                          ID_COLORBLEED_UP
+            MENUITEM "Down",                        ID_COLORBLEED_DOWN
+            MENUITEM "Subtle Up",                   ID_COLORBLEED_SUBTLEUP
+            MENUITEM "Subtle Down",                 ID_COLORBLEED_SUBTLEDOWN
+            MENUITEM "Palette Up",                  ID_COLORBLEED_PALETTEUP
+            MENUITEM "Palette Down",                ID_COLORBLEED_PALETTEDOWN
+        END
+        POPUP "Image Filter"
+        BEGIN
+            MENUITEM "Smooth",                      ID_IMAGEFILTER_SMOOTH
+        END
+        POPUP "Drag Rectangle"
+        BEGIN
+            MENUITEM "Zoom Box",                    ID_DRAGRECTANGLE_ZOOMBOX
+            MENUITEM "Text Box",                    ID_DRAGRECTANGLE_TEXTBOX
+            MENUITEM "Picture Box",                 ID_DRAGRECTANGLE_PICTUREBOX
+        END
+    END
+    POPUP "&View"
+    BEGIN
+        MENUITEM "&Zoom Out",                   ID_VIEW_ZOOMOUT
+        MENUITEM "S&mall Zoom\t(F1)",           ID_VIEW_SMALLZOOM
+        MENUITEM "&Continuous Small Zoom\t(Shift+F1)", ID_VIEW_CONTINUOUS_SMALLZOOM
+    END
+    POPUP "&Window"
+    BEGIN
+        MENUITEM "&New Window",                 ID_WINDOW_NEW
+        MENUITEM "&Cascade",                    ID_WINDOW_CASCADE
+        MENUITEM "&Tile",                       ID_WINDOW_TILE_HORZ
+        MENUITEM "&Arrange Icons",              ID_WINDOW_ARRANGE
+    END
+    POPUP "&Help"
+    BEGIN
+        MENUITEM "&About Fractal...",           ID_APP_ABOUT
+    END
+END
+
+IDR_CSM_VIEW MENU
+BEGIN
+    POPUP "Context"
+    BEGIN
+        POPUP "Color Bleed"
+        BEGIN
+            MENUITEM "Up",                          ID_COLORBLEED_UP
+            MENUITEM "Down",                        ID_COLORBLEED_DOWN
+            MENUITEM "Subtle Up",                   ID_COLORBLEED_SUBTLEUP
+            MENUITEM "Subtle Down",                 ID_COLORBLEED_SUBTLEDOWN
+            MENUITEM "Palette Up",                  ID_COLORBLEED_PALETTEUP
+            MENUITEM "Palette Down",                ID_COLORBLEED_PALETTEDOWN
+        END
+        POPUP "Image Filter"
+        BEGIN
+            MENUITEM "Smooth",                      ID_IMAGEFILTER_SMOOTH
+        END
+        MENUITEM "Julia Set",                   ID_CONTEXT_JULIA
+        POPUP "Drag Rectangle"
+        BEGIN
+            MENUITEM "Zoom Box",                    ID_DRAGRECTANGLE_ZOOMBOX
+            MENUITEM "Text Box",                    ID_DRAGRECTANGLE_TEXTBOX
+            MENUITEM "Picture Box",                 ID_DRAGRECTANGLE_PICTUREBOX
+        END
+        POPUP "Text", INACTIVE
+        BEGIN
+            MENUITEM "Edit",                        ID_CONTEXT_TEXT_EDIT, INACTIVE
+            MENUITEM "Delete",                      ID_CONTEXT_TEXT_DELETE, INACTIVE
+        END
+        POPUP "Picture", INACTIVE
+        BEGIN
+            MENUITEM "Edit",                        ID_CONTEXT_PICTURE_EDIT, INACTIVE
+            MENUITEM "Delete",                      ID_CONTEXT_PICTURE_DELETE, INACTIVE
+        END
+        MENUITEM "Edit Color",                  ID_CONTEXT_EDIT_COLOR
+    END
+END
+
+IDR_CSM_JULIA MENU
+BEGIN
+    POPUP "Context"
+    BEGIN
+        POPUP "Color Bleed"
+        BEGIN
+            MENUITEM "Up",                          ID_COLORBLEED_UP
+            MENUITEM "Down",                        ID_COLORBLEED_DOWN
+            MENUITEM "Subtle Up",                   ID_COLORBLEED_SUBTLEUP
+            MENUITEM "Subtle Down",                 ID_COLORBLEED_SUBTLEDOWN
+            MENUITEM "Palette Up",                  ID_COLORBLEED_PALETTEUP
+            MENUITEM "Palette Down",                ID_COLORBLEED_PALETTEDOWN
+        END
+        POPUP "Image Filter"
+        BEGIN
+            MENUITEM "Smooth",                      ID_IMAGEFILTER_SMOOTH
+        END
+        MENUITEM "Zoom 2x",                     ID_CONTEXT_JULIA2X
+        POPUP "Drag Rectangle"
+        BEGIN
+            MENUITEM "Zoom Box",                    ID_DRAGRECTANGLE_ZOOMBOX
+            MENUITEM "Text Box",                    ID_DRAGRECTANGLE_TEXTBOX
+            MENUITEM "Picture Box",                 ID_DRAGRECTANGLE_PICTUREBOX
+        END
+        POPUP "Text", INACTIVE
+        BEGIN
+            MENUITEM "Edit",                        ID_CONTEXT_TEXT_EDIT, INACTIVE
+            MENUITEM "Delete",                      ID_CONTEXT_TEXT_DELETE, INACTIVE
+        END
+        POPUP "Picture", INACTIVE
+        BEGIN
+            MENUITEM "Edit",                        ID_CONTEXT_PICTURE_EDIT, INACTIVE
+            MENUITEM "Delete",                      ID_CONTEXT_PICTURE_DELETE, INACTIVE
+        END
+        MENUITEM "Edit Color",                  ID_CONTEXT_EDIT_COLOR
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Accelerator
+//
+
+IDR_MAINFRAME ACCELERATORS
+BEGIN
+    "C",            ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
+    VK_INSERT,      ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
+    VK_DELETE,      ID_EDIT_CUT,            VIRTKEY, SHIFT, NOINVERT
+    "X",            ID_EDIT_CUT,            VIRTKEY, CONTROL, NOINVERT
+    "V",            ID_EDIT_PASTE,          VIRTKEY, CONTROL, NOINVERT
+    VK_INSERT,      ID_EDIT_PASTE,          VIRTKEY, SHIFT, NOINVERT
+    VK_BACK,        ID_EDIT_UNDO,           VIRTKEY, ALT, NOINVERT
+    "Z",            ID_EDIT_UNDO,           VIRTKEY, CONTROL, NOINVERT
+    "N",            ID_FILE_NEW,            VIRTKEY, CONTROL, NOINVERT
+    "O",            ID_FILE_OPEN,           VIRTKEY, CONTROL, NOINVERT
+    "P",            ID_FILE_PRINT,          VIRTKEY, CONTROL, NOINVERT
+    "S",            ID_FILE_SAVE,           VIRTKEY, CONTROL, NOINVERT
+    VK_F6,          ID_NEXT_PANE,           VIRTKEY, NOINVERT
+    VK_F6,          ID_PREV_PANE,           VIRTKEY, SHIFT, NOINVERT
+    VK_F1,          ID_VIEW_SMALLZOOM,      VIRTKEY, NOINVERT
+    VK_F1,          ID_VIEW_CONTINUOUS_SMALLZOOM, VIRTKEY, SHIFT, NOINVERT
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_ABOUTBOX DIALOGEX 0, 0, 170, 86
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "About Fractal"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
+BEGIN
+    ICON            IDR_MAINFRAME,IDC_STATIC,14,14,21,20
+    LTEXT           "Fractal.exe",IDC_STATIC,42,14,114,8,SS_NOPREFIX
+    LTEXT           "Copyright (C) 2012-2016 Andrew S. Bantly",IDC_STATIC,42,26,114,8
+    DEFPUSHBUTTON   "OK",IDOK,113,65,50,14,WS_GROUP
+    LTEXT           "For Doug ""Sting"" Ray, whose mathematical curiosity inspires me to keep on learning",IDC_STATIC,12,44,151,17
+END
+
+IDD_NEW_FRACTAL DIALOGEX 0, 0, 454, 345
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "New Fractal"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    GROUPBOX        "Resolution, Precision, Number of Colors, and Divergance",IDC_STATIC,7,7,293,53
+    LTEXT           "Width",IDC_STATIC,12,24,20,14,SS_CENTERIMAGE
+    EDITTEXT        IDC_EDIT_WIDTH,42,24,30,14,ES_AUTOHSCROLL
+    LTEXT           "Height",IDC_STATIC,84,24,22,14,SS_CENTERIMAGE
+    EDITTEXT        IDC_EDIT_HEIGHT,114,24,30,14,ES_AUTOHSCROLL
+    LTEXT           "Colors",IDC_STATIC,156,24,22,14,SS_CENTERIMAGE
+    EDITTEXT        IDC_EDIT_ITER,186,24,30,14,ES_AUTOHSCROLL
+    LTEXT           "Iterations",IDC_STATIC,228,24,34,14,SS_CENTERIMAGE
+    EDITTEXT        IDC_EDIT_CALC,264,24,30,14,ES_AUTOHSCROLL
+    LTEXT           "A Scale",IDC_STATIC,12,42,24,14,SS_CENTERIMAGE
+    EDITTEXT        IDC_EDIT_XSCALE,42,42,30,14,ES_AUTOHSCROLL
+    LTEXT           "B Scale",IDC_STATIC,84,42,24,14,SS_CENTERIMAGE
+    EDITTEXT        IDC_EDIT_YSCALE,114,42,30,14,ES_AUTOHSCROLL
+    LTEXT           "Bailout",IDC_STATIC,156,42,24,14,SS_CENTERIMAGE
+    EDITTEXT        IDC_EDIT_BAILOUT,186,42,30,14,ES_AUTOHSCROLL
+    LTEXT           "Mode",IDC_STATIC,240,42,22,14,SS_CENTERIMAGE
+    EDITTEXT        IDC_EDIT_MODE,264,42,30,14,ES_AUTOHSCROLL
+    GROUPBOX        "Coordinate Range",IDC_STATIC,7,60,293,72
+    LTEXT           "X Min",IDC_STATIC_XMIN,11,72,18,14,SS_CENTERIMAGE
+    EDITTEXT        IDC_EDIT_XMIN,35,72,54,14,ES_AUTOHSCROLL
+    LTEXT           "X Max",IDC_STATIC_XMAX,95,72,20,14,SS_CENTERIMAGE
+    EDITTEXT        IDC_EDIT_XMAX,119,72,54,14,ES_AUTOHSCROLL
+    LTEXT           "Y Min",IDC_STATIC_YMIN,11,90,18,14,SS_CENTERIMAGE
+    EDITTEXT        IDC_EDIT_YMIN,35,90,54,14,ES_AUTOHSCROLL
+    LTEXT           "Y Max",IDC_STATIC_YMAX,95,90,20,14,SS_CENTERIMAGE
+    EDITTEXT        IDC_EDIT_YMAX,119,90,54,14,ES_AUTOHSCROLL
+    RTEXT           "P",IDC_STATIC_P,12,114,18,14,SS_CENTERIMAGE
+    EDITTEXT        IDC_EDIT_P,36,114,54,14,ES_AUTOHSCROLL
+    RTEXT           "Q",IDC_STATIC_Q,96,114,20,14,SS_CENTERIMAGE
+    EDITTEXT        IDC_EDIT_Q,120,114,54,14,ES_AUTOHSCROLL
+    LTEXT           "Interesting coordinates",IDC_STATIC,186,72,81,14,SS_CENTERIMAGE
+    COMBOBOX        IDC_COMBO_RANGE,186,90,108,120,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Step",IDC_STATIC_STEP,186,114,16,14,SS_CENTERIMAGE
+    EDITTEXT        IDC_EDIT_STAIRSTEP,204,114,24,14,ES_AUTOHSCROLL
+    CONTROL         "Color",IDC_STEPCOLOR,"Button",BS_OWNERDRAW | WS_TABSTOP,234,114,60,14
+    GROUPBOX        "Color Inclusion and Scaling",IDC_STATIC,7,138,294,108
+    CONTROL         "Include Red",IDC_CHECK_RED,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,18,150,54,14
+    RTEXT           "Offset",IDC_STATIC,84,150,24,14,SS_CENTERIMAGE
+    EDITTEXT        IDC_EDIT_RR,114,150,30,14,ES_AUTOHSCROLL
+    CONTROL         "Include Green",IDC_CHECK_GREEN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,18,174,60,14
+    RTEXT           "Offset",IDC_STATIC,84,174,24,14,SS_CENTERIMAGE
+    EDITTEXT        IDC_EDIT_RG,114,174,30,14,ES_AUTOHSCROLL
+    CONTROL         "Include Blue",IDC_CHECK_BLUE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,18,198,54,14
+    RTEXT           "Offset",IDC_STATIC,84,198,24,14,SS_CENTERIMAGE
+    EDITTEXT        IDC_EDIT_RB,114,198,30,14,ES_AUTOHSCROLL
+    CONTROL         "Base Color",IDC_CHECK_BASE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,18,222,54,14
+    CONTROL         "Base",IDC_BASE,"Button",BS_OWNERDRAW | WS_TABSTOP,84,222,66,14
+    PUSHBUTTON      "Reset",IDC_RESET,156,174,66,14
+    PUSHBUTTON      "Reverse",IDC_REVERSE,156,198,66,14
+    CONTROL         "Random",IDC_RANDOM,"Button",BS_OWNERDRAW | WS_TABSTOP,156,222,66,14
+    CONTROL         "Drop Unused",IDC_CHECK_DROPUNUSED,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,156,150,54,14
+    CONTROL         "Sort orbits",IDC_CHECK_SMOOTH,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,240,150,50,14
+    CONTROL         "Lesser",IDC_SORT_LESS,"Button",BS_AUTORADIOBUTTON | WS_GROUP,246,168,37,10
+    CONTROL         "Greater",IDC_SORT_GREATER,"Button",BS_AUTORADIOBUTTON,246,180,41,10
+    CONTROL         "Gradient",IDC_CHECK_GRADIENT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,240,198,43,14
+    GROUPBOX        "Color Palette",IDC_STATIC,7,246,444,72
+    CONTROL         "Color 1",IDC_GRADIENT1,"Button",BS_OWNERDRAW | WS_TABSTOP,12,258,66,14
+    CONTROL         "Color 2",IDC_GRADIENT2,"Button",BS_OWNERDRAW | WS_TABSTOP,84,258,66,14
+    CONTROL         "Color 3",IDC_GRADIENT3,"Button",BS_OWNERDRAW | WS_TABSTOP,156,258,66,14
+    CONTROL         "Color 4",IDC_GRADIENT4,"Button",BS_OWNERDRAW | WS_TABSTOP,228,258,66,14
+    CONTROL         "Color 5",IDC_GRADIENT5,"Button",BS_OWNERDRAW | WS_TABSTOP,300,258,66,14
+    CONTROL         "Color 6",IDC_GRADIENT6,"Button",BS_OWNERDRAW | WS_TABSTOP,372,258,66,14
+    CONTROL         "",IDC_GRADIENT_COLORS,"Button",BS_OWNERDRAW | WS_TABSTOP,12,276,426,14
+    GROUPBOX        "Area / Method of Coloring / Orbital Trap",IDC_STATIC,306,6,144,126
+    LTEXT           "Base Color",IDC_STATIC_BASECOLOR,312,24,35,8
+    CONTROL         "Use Base Color",IDC_RADIO_BASE_COLOR,"Button",BS_AUTORADIOBUTTON | WS_GROUP,318,36,60,14
+    CONTROL         "Use Angular Decomposition",IDC_RADIO_BASE_AD_BASE,
+                    "Button",BS_AUTORADIOBUTTON,318,48,102,14
+    LTEXT           "Fractal Color",IDC_STATIC_FRACTALCOLOR,312,70,42,8
+    CONTROL         "Use Orbit Color",IDC_RADIO_ORBIT_COLOR,"Button",BS_AUTORADIOBUTTON | WS_GROUP,318,82,60,14
+    CONTROL         "Use Angular Decomposition",IDC_RADIO_BASE_AD_FRACTAL,
+                    "Button",BS_AUTORADIOBUTTON,318,96,102,14
+    GROUPBOX        "Background Images and Opacity",IDC_STATIC,306,138,144,108
+    CONTROL         "Base Image",IDC_CHOOSE_IMAGE,"Button",BS_OWNERDRAW | WS_TABSTOP,318,156,60,14
+    LTEXT           "Opacity (0-100)",IDC_STATIC_OPACITY,390,156,54,14,SS_CENTERIMAGE | WS_DISABLED
+    CONTROL         "Blend with Base",IDC_CHECK_BLENDBASE,"Button",BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,318,175,66,14
+    EDITTEXT        IDC_EDIT_OPACITY,390,174,48,14,ES_AUTOHSCROLL | WS_DISABLED
+    CONTROL         "Fractal Image",IDC_CHOOSE_IMAGE2,"Button",BS_OWNERDRAW | WS_TABSTOP,318,204,60,14
+    LTEXT           "Opacity (0-100)",IDC_STATIC_OPACITY2,390,204,54,14,SS_CENTERIMAGE | WS_DISABLED
+    CONTROL         "Blend with Fractal",IDC_CHECK_BLENDFRACTAL,"Button",BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,318,228,72,14
+    EDITTEXT        IDC_EDIT_OPACITY2,390,228,48,14,ES_AUTOHSCROLL | WS_DISABLED
+    DEFPUSHBUTTON   "OK",IDOK,402,324,50,14
+    CONTROL         "Edit Colors",IDC_EDIT_COLORS,"Button",BS_OWNERDRAW | WS_TABSTOP,228,222,66,14
+    CONTROL         "",IDC_DONATE,"Button",BS_OWNERDRAW | WS_TABSTOP,6,324,50,14
+    LTEXT           "Trap",IDC_STATIC,312,114,16,14,SS_CENTERIMAGE
+    CONTROL         "X",IDC_CHECK_TRAPX,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,330,114,18,14
+    EDITTEXT        IDC_EDIT_TRAPX,348,114,30,14,ES_AUTOHSCROLL | WS_DISABLED
+    CONTROL         "Y",IDC_CHECK_TRAPY,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,384,114,18,14
+    EDITTEXT        IDC_EDIT_TRAPY,402,114,30,14,ES_AUTOHSCROLL | WS_DISABLED
+    CONTROL         "Red",IDC_CHECK_GCR,"Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,90,300,24,14,WS_EX_RIGHT
+    CONTROL         "Green",IDC_CHECK_GCG,"Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,156,300,36,14,WS_EX_RIGHT
+    CONTROL         "Blue",IDC_CHECK_GCB,"Button",BS_AUTOCHECKBOX | BS_LEFTTEXT | BS_MULTILINE | WS_TABSTOP,240,300,24,14,WS_EX_RIGHT
+    EDITTEXT        IDC_EDIT_GCR,120,300,30,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT_GCG,198,300,30,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT_GCB,270,300,30,14,ES_AUTOHSCROLL
+    LTEXT           "Press F1 for help",IDC_STATIC,378,299,55,14,SS_CENTERIMAGE
+    LTEXT           "Gamma Correct:",IDC_STATIC,18,300,60,12,SS_CENTERIMAGE
+END
+
+IDD_EMBED DIALOGEX 0, 0, 113, 24
+STYLE DS_SETFONT | DS_3DLOOK | DS_FIXEDSYS | WS_CHILD
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    CONTROL         "Embed image(s) to the file",IDC_EMBEDDED,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,7,99,10
+END
+
+IDD_ZOOM_TO_COORDS DIALOGEX 0, 0, 188, 141
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION " Zoom to Coordinates"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "Would you like to zoom in to the following coordinates in the existing document or in a new document?",IDC_STATIC,12,12,169,24
+    CTEXT           "YETI CABS",IDC_STATIC_COORD,7,42,174,19
+    CONTROL         "In a new document",IDC_RADIO_NEW,"Button",BS_AUTORADIOBUTTON | WS_GROUP,12,72,77,10
+    CONTROL         "In the existing document",IDC_RADIO_EXISTING,"Button",BS_AUTORADIOBUTTON,12,84,95,10
+    CONTROL         "Fly Into ",IDC_CHECK_FLYFRAMES,"Button",BS_AUTOCHECKBOX | BS_VCENTER | WS_DISABLED | WS_TABSTOP,7,100,38,14
+    LTEXT           "By Frames",IDC_STATIC_FLYFRAMES,52,100,37,14,SS_CENTERIMAGE | WS_DISABLED
+    EDITTEXT        IDC_EDIT_FLYFRAMES,87,100,40,14,ES_AUTOHSCROLL | WS_DISABLED
+    CONTROL         "By Pixels",IDC_CHECK_PIXELS,"Button",BS_AUTOCHECKBOX | BS_VCENTER | NOT WS_VISIBLE | WS_DISABLED | WS_TABSTOP,135,100,46,14
+    DEFPUSHBUTTON   "OK",IDOK,131,120,50,14
+END
+
+IDD_NEW_FRACTAL_TYPE DIALOGEX 0, 0, 328, 171
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Select Fractal Type"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "",IDC_STATIC_FRACTAL_TYPE,12,12,306,36
+    GROUPBOX        "Fractal Types",IDC_STATIC,6,60,312,84
+    CONTROL         "Mandelbrot",IDC_RADIO_MANDELBROT,"Button",BS_AUTORADIOBUTTON | WS_GROUP,17,72,49,10
+    CONTROL         "Julia",IDC_RADIO_JULIA,"Button",BS_AUTORADIOBUTTON,180,72,30,10
+    CONTROL         "Mandelbrot Dragon",IDC_RADIO_MANDELBROTDRAGON,"Button",BS_AUTORADIOBUTTON,18,90,82,10
+    CONTROL         "Mandelbrot Phoenix",IDC_RADIO_MANDELBROTPHOENIX,"Button",BS_AUTORADIOBUTTON,18,108,78,10
+    CONTROL         "Julia Dragon",IDC_RADIO_JULIADRAGON,"Button",BS_AUTORADIOBUTTON,180,90,54,10
+    CONTROL         "Julia Phoenix",IDC_RADIO_JULIAPHOENIX,"Button",BS_AUTORADIOBUTTON,180,108,54,10
+    CONTROL         "Mandelbrot Phoenix V2",IDC_RADIO_MANDELBROTPHOENIX2,
+                    "Button",BS_AUTORADIOBUTTON,18,126,85,10
+    CONTROL         "Buddhabrot",IDC_RADIO_BUDDHABROT,"Button",BS_AUTORADIOBUTTON,180,126,65,10
+    DEFPUSHBUTTON   "OK",IDOK,270,150,50,14
+END
+
+IDD_ADDTEXT DIALOGEX 0, 0, 427, 176
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
+EXSTYLE WS_EX_APPWINDOW
+CAPTION "Add Text"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
+BEGIN
+    EDITTEXT        IDC_EDIT_TEXT,8,6,412,102,ES_MULTILINE | ES_AUTOVSCROLL | ES_AUTOHSCROLL | ES_WANTRETURN | WS_VSCROLL | WS_HSCROLL
+    RTEXT           "Font",IDC_STATIC_FONT,12,114,18,14,SS_CENTERIMAGE
+    CONTROL         "Add Italics",IDC_ITALICS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,192,132,50,14
+    CONTROL         "Text",IDC_TEXTCOLOR,"Button",BS_OWNERDRAW | WS_TABSTOP,252,114,84,14
+    CONTROL         "Background",IDC_BACKCOLOR,"Button",BS_OWNERDRAW | WS_TABSTOP,336,114,84,14
+    RTEXT           "Opacity",IDC_STATIC_OPACITY,252,132,41,14,SS_CENTERIMAGE
+    EDITTEXT        IDC_TEXT_OPACITY,300,132,36,14,ES_NUMBER
+    RTEXT           "Point Size",IDC_STATIC_POINTSIZE,258,150,36,14,SS_CENTERIMAGE
+    EDITTEXT        IDC_POINTSIZE,300,150,36,14,ES_NUMBER
+    DEFPUSHBUTTON   "OK",IDOK,370,156,50,14
+    CONTROL         "No background",IDC_NOBACKGROUND,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,354,132,66,14
+    COMBOBOX        IDC_FONT,38,114,204,97,CBS_DROPDOWNLIST | CBS_OWNERDRAWVARIABLE | CBS_SORT | CBS_HASSTRINGS | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "",IDC_BOLDSLIDER,"msctls_trackbar32",TBS_AUTOTICKS | TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,36,132,145,15
+    RTEXT           "Weight",IDC_STATIC_WEIGHT,6,132,24,15,SS_CENTERIMAGE
+END
+
+IDD_ANIMATE DIALOGEX 0, 0, 112, 53
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Animation Settings"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    EDITTEXT        IDC_EDIT_FPS,6,6,30,14,ES_AUTOHSCROLL
+    LTEXT           "Frames per second",IDC_STATIC,42,6,66,14,SS_CENTERIMAGE
+    CONTROL         "Record it",IDC_CHECK_RECORD,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,30,42,14
+    DEFPUSHBUTTON   "Start",IDOK,54,30,50,14
+END
+
+IDD_EDIT_COLORS DIALOGEX 0, 0, 316, 182
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Edit Colors"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,205,161,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,259,161,50,14
+    CONTROL         "",IDC_LIST_COLORS,"SysListView32",WS_BORDER | WS_TABSTOP,7,7,302,148
+END
+
+IDD_HELPDIALOG DIALOGEX 0, 0, 316, 182
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Help / How To"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "",IDC_STATIC_INFO,7,7,302,168
+END
+
+IDD_ADDPICTURE DIALOGEX 0, 0, 304, 45
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Add Picture"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    CONTROL         "Choose Picture",IDC_CHOOSE_PICTURE,"Button",BS_OWNERDRAW | WS_TABSTOP,6,6,72,14
+    EDITTEXT        IDC_EDIT_PICTURENAME,84,6,216,14,ES_AUTOHSCROLL
+    RTEXT           "Opacity (0-100)",IDC_STATIC_OPACITY,12,24,66,14,SS_CENTERIMAGE
+    EDITTEXT        IDC_EDIT_OPACITY,84,24,36,14,ES_AUTOHSCROLL
+    CONTROL         "Transparent Color",IDC_CHECK_TRANSPARENT_COLOR,"Button",BS_AUTOCHECKBOX | BS_CENTER | BS_VCENTER | WS_TABSTOP,132,24,72,12
+    CONTROL         "",IDC_TRANSPARENT_COLOR,"Button",BS_OWNERDRAW | WS_TABSTOP,210,24,30,14
+    DEFPUSHBUTTON   "OK",IDOK,252,24,48,14
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 1,0,0,1
+ PRODUCTVERSION 1,0,0,1
+ FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x4L
+ FILETYPE 0x1L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904e4"
+        BEGIN
+            VALUE "CompanyName", "Andrew Bantly"
+            VALUE "FileDescription", "Fractal visualization"
+            VALUE "FileVersion", "1.0.0.1"
+            VALUE "InternalName", "Fractal.exe"
+            VALUE "LegalCopyright", "(c 2015) Andrew Bantly.  All rights reserved."
+            VALUE "OriginalFilename", "Fractal.exe"
+            VALUE "ProductName", "Fractal"
+            VALUE "ProductVersion", "1.0.0.1"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1252
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO
+BEGIN
+    IDD_ABOUTBOX, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 163
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 79
+    END
+
+    IDD_NEW_FRACTAL, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 447
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 338
+    END
+
+    IDD_EMBED, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 106
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 17
+    END
+
+    IDD_ZOOM_TO_COORDS, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 181
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 134
+    END
+
+    IDD_NEW_FRACTAL_TYPE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 321
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 164
+    END
+
+    IDD_ADDTEXT, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 420
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 169
+    END
+
+    IDD_ANIMATE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 105
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 46
+    END
+
+    IDD_EDIT_COLORS, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 309
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 175
+    END
+
+    IDD_HELPDIALOG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 309
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 175
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// REGISTRY
+//
+
+IDR_FRACTAL             REGISTRY                "Fractal.rgs"
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Cursor
+//
+
+IDC_CURSOR1             CURSOR                  "res\\cursor1.cur"
+
+IDC_CURSOR2             CURSOR                  "res\\cursor2.cur"
+
+IDC_CURSOR3             CURSOR                  "res\\cursor3.cur"
+
+IDC_CURSOR4             CURSOR                  "res\\cursor4.cur"
+
+IDC_CURSOR5             CURSOR                  "res\\cursor5.cur"
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Bitmap
+//
+
+IDB_COLORS              BITMAP                  "res\\colors.bmp"
+
+IDB_PICTURE             BITMAP                  "res\\picture.bmp"
+
+IDB_DONATE              BITMAP                  "res\\donate.bmp"
+
+IDB_TTR                 BITMAP                  "res\\ttr.bmp"
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// AFX_DIALOG_LAYOUT
+//
+
+IDD_ADDTEXT AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE
+BEGIN
+    IDP_OLE_INIT_FAILED     "OLE initialization failed.  Make sure that the OLE libraries are the correct version."
+    IDS_FRACTAL_CURSOR_POS  "-X.XXXXXX,-X.XXXXXX"
+    IDR_MAINFRAME           "Fractal"
+    IDR_FractalTYPE         "\nFractal\nFractal\nFractal Files (*.frc)\n.frc\nFractal.Document\nFractal.Document"
+END
+
+STRINGTABLE
+BEGIN
+    AFX_IDS_APP_TITLE       "Fractal"
+    AFX_IDS_IDLEMESSAGE     "Ready"
+END
+
+STRINGTABLE
+BEGIN
+    ID_INDICATOR_EXT        "EXT"
+    ID_INDICATOR_CAPS       "CAP"
+    ID_INDICATOR_NUM        "NUM"
+    ID_INDICATOR_SCRL       "SCRL"
+    ID_INDICATOR_OVR        "OVR"
+    ID_INDICATOR_REC        "REC"
+END
+
+STRINGTABLE
+BEGIN
+    ID_FILE_NEW             "Create a new document\nNew"
+    ID_FILE_OPEN            "Open an existing document\nOpen"
+    ID_FILE_CLOSE           "Close the active document\nClose"
+    ID_FILE_SAVE            "Save the active document\nSave"
+    ID_FILE_SAVE_AS         "Save the active document as an image\nSave As"
+    ID_FILE_PAGE_SETUP      "Change the printing options\nPage Setup"
+    ID_FILE_PRINT_SETUP     "Change the printer and printing options\nPrint Setup"
+    ID_FILE_PRINT           "Print the active document\nPrint"
+    ID_FILE_PRINT_DIRECT    "Print the active document using current options\nQuick Print"
+    ID_FILE_PRINT_PREVIEW   "Display full pages\nPrint Preview"
+END
+
+STRINGTABLE
+BEGIN
+    ID_APP_ABOUT            "Display program information, version number and copyright\nAbout"
+    ID_APP_EXIT             "Quit the application; prompts to save documents\nExit"
+END
+
+STRINGTABLE
+BEGIN
+    ID_FILE_MRU_FILE1       "Open this document"
+    ID_FILE_MRU_FILE2       "Open this document"
+    ID_FILE_MRU_FILE3       "Open this document"
+    ID_FILE_MRU_FILE4       "Open this document"
+    ID_FILE_MRU_FILE5       "Open this document"
+    ID_FILE_MRU_FILE6       "Open this document"
+    ID_FILE_MRU_FILE7       "Open this document"
+    ID_FILE_MRU_FILE8       "Open this document"
+    ID_FILE_MRU_FILE9       "Open this document"
+    ID_FILE_MRU_FILE10      "Open this document"
+    ID_FILE_MRU_FILE11      "Open this document"
+    ID_FILE_MRU_FILE12      "Open this document"
+    ID_FILE_MRU_FILE13      "Open this document"
+    ID_FILE_MRU_FILE14      "Open this document"
+    ID_FILE_MRU_FILE15      "Open this document"
+    ID_FILE_MRU_FILE16      "Open this document"
+END
+
+STRINGTABLE
+BEGIN
+    ID_NEXT_PANE            "Switch to the next window pane\nNext Pane"
+    ID_PREV_PANE            "Switch back to the previous window pane\nPrevious Pane"
+END
+
+STRINGTABLE
+BEGIN
+    ID_WINDOW_NEW           "Open another window for the active document\nNew Window"
+    ID_WINDOW_ARRANGE       "Arrange icons at the bottom of the window\nArrange Icons"
+    ID_WINDOW_CASCADE       "Arrange windows so they overlap\nCascade Windows"
+    ID_WINDOW_TILE_HORZ     "Arrange windows as non-overlapping tiles\nTile Windows"
+    ID_WINDOW_TILE_VERT     "Arrange windows as non-overlapping tiles\nTile Windows"
+    ID_WINDOW_SPLIT         "Split the active window into panes\nSplit"
+END
+
+STRINGTABLE
+BEGIN
+    ID_EDIT_CLEAR           "Erase the selection\nErase"
+    ID_EDIT_CLEAR_ALL       "Erase everything\nErase All"
+    ID_EDIT_COPY            "Copy the selection and put it on the Clipboard\nCopy"
+    ID_EDIT_CUT             "Cut the selection and put it on the Clipboard\nCut"
+    ID_EDIT_FIND            "Find the specified text\nFind"
+    ID_EDIT_PASTE           "Insert Clipboard contents\nPaste"
+    ID_EDIT_REPEAT          "Repeat the last action\nRepeat"
+    ID_EDIT_REPLACE         "Replace specific text with different text\nReplace"
+    ID_EDIT_SELECT_ALL      "Select the entire document\nSelect All"
+    ID_EDIT_UNDO            "Undo the last action\nUndo"
+    ID_EDIT_REDO            "Redo the previously undone action\nRedo"
+END
+
+STRINGTABLE
+BEGIN
+    ID_VIEW_STATUS_BAR      "Show or hide the status bar\nToggle Status Bar"
+END
+
+STRINGTABLE
+BEGIN
+    AFX_IDS_SCSIZE          "Change the window size"
+    AFX_IDS_SCMOVE          "Change the window position"
+    AFX_IDS_SCMINIMIZE      "Reduce the window to an icon"
+    AFX_IDS_SCMAXIMIZE      "Enlarge the window to full size"
+    AFX_IDS_SCNEXTWINDOW    "Switch to the next document window"
+    AFX_IDS_SCPREVWINDOW    "Switch to the previous document window"
+    AFX_IDS_SCCLOSE         "Close the active window and prompts to save the documents"
+END
+
+STRINGTABLE
+BEGIN
+    AFX_IDS_SCRESTORE       "Restore the window to normal size"
+    AFX_IDS_SCTASKLIST      "Activate Task List"
+    AFX_IDS_MDICHILD        "Activate this window"
+END
+
+STRINGTABLE
+BEGIN
+    AFX_IDS_PREVIEW_CLOSE   "Close print preview mode\nCancel Preview"
+END
+
+STRINGTABLE
+BEGIN
+    ID_VIEW_ZOOMOUT         "Zoom out to show full resolution (May distort image)\nZoom Out"
+END
+
+STRINGTABLE
+BEGIN
+    ID_VIEW_SMALLZOOM       "(F1) Zoom in by the smallest increment\nSmall Zoom"
+    ID_VIEW_CONTINUOUSSMALLZOOM 
+                            "(Shift+F1) Continuous Small Zoom\nContinuous Small Zoom"
+END
+
+#endif    // English (United States) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+#define _AFX_NO_OLE_RESOURCES
+#define _AFX_NO_TRACKER_RESOURCES
+#define _AFX_NO_PROPERTY_RESOURCES
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+LANGUAGE 9, 1
+#pragma code_page(1252)
+#include "res\Fractal.rc2"  // non-Microsoft Visual C++ edited resources
+#include "afxres.rc"         // Standard components
+#include "afxprint.rc"       // printing/print preview resources
+#endif
+
+1 TYPELIB "Fractal.tlb"
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+
