@@ -47,7 +47,7 @@ public:
 	~CCalcBase(){};
 
 protected:
-	virtual bool Test(double dXSQ, double dYSQ)
+	/*virtual*/ bool Test(double dXSQ, double dYSQ) /* final */ // try to keep this baby as fast as possible.  virtualizing will slow by 35% or more
 	{
 		switch (m_iMode)
 		{
@@ -132,7 +132,7 @@ protected:
 	double m_dYScale;
 	double m_dBailRadius;
 };
-
+/* -- possibly future function but would need devirtualization
 class CCalcBaseMode1 : public CCalcBase
 {
 public:
@@ -140,7 +140,7 @@ public:
 	virtual ~CCalcBaseMode1(){};
 
 protected:
-	virtual bool Test(double dXSQ, double dYSQ)
+	virtual bool Test(double dXSQ, double dYSQ) final
 	{
 		return (m_dXScale * dXSQ + m_dYScale * dYSQ) < m_dBailRadius;
 	}
@@ -153,7 +153,7 @@ public:
 	virtual ~CCalcBaseMode2(){};
 
 protected:
-	virtual bool Test(double dXSQ, double dYSQ)
+	virtual bool Test(double dXSQ, double dYSQ) final
 	{
 		return (m_dXScale * dXSQ - m_dYScale * dYSQ) < m_dBailRadius;
 	}
@@ -166,7 +166,7 @@ public:
 	virtual ~CCalcBaseMode3(){};
 
 protected:
-	virtual bool Test(double dXSQ, double dYSQ)
+	virtual bool Test(double dXSQ, double dYSQ) final
 	{
 		return (m_dYScale * dYSQ - m_dXScale * dXSQ) < m_dBailRadius;
 	}
@@ -179,12 +179,12 @@ public:
 	virtual ~CCalcBaseMode4(){};
 
 protected:
-	virtual bool Test(double dXSQ, double dYSQ)
+	virtual bool Test(double dXSQ, double dYSQ) final
 	{
 		return (abs(m_dXScale * dXSQ - m_dYScale * dYSQ)) < m_dBailRadius;
 	}
 };
-
+*/
 // Class for calculating the mandelbrot set
 class CFractalBase
 {
@@ -205,7 +205,7 @@ public:
 	CFractalCanvas(CFractalParm FractalParm,CDIBFrame & DisplayDIB);
 	virtual ~CFractalCanvas() {};
 	std::vector<CIteration> GetIterations();
-	virtual void Apply(ULONG Iteration, int Column, int Row)
+	virtual void Apply(ULONG Iteration, int Column, int Row) final
 	{
 		// Check for color scaling (calculations <> color palette)
 		LONG Color = Iteration;
