@@ -1,4 +1,4 @@
-// Copyright (C) 2012-2016 Andrew S. Bantly
+// Copyright (C) 2012-Present Andrew S. Bantly
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -42,7 +42,7 @@ END_MESSAGE_MAP()
 CFractalApp::CFractalApp()
 {
 	// Output the licensing disclaimer
-	DebugMsg(_T("Fractal.exe Copyright (C) 2012-2016 Andrew S. Bantly\n"));
+	DebugMsg(_T("Fractal.exe Copyright (C) 2012-Present Andrew S. Bantly\n"));
 	DebugMsg(_T("Andrew Bantly can be reached at jones.gravy@gmail.com\n"));
 	DebugMsg(_T("Fractal comes with ABSOLUTELY NO WARRANTY\n"));
 	DebugMsg(_T("This is free software, and you are welcome to redistribute it\n"));
