@@ -48,6 +48,8 @@ CFractalApp::CFractalApp()
 	DebugMsg(_T("This is free software, and you are welcome to redistribute it\n"));
 	DebugMsg(_T("under of the GNU General Public License as published by\n"));
 	DebugMsg(_T("the Free Software Foundation; version 2 of the License.\n"));
+	DebugMsg(_T("\n"));
+	DebugMsg(_T("\"We can forgive a man for making a useful thing as long as he does not admire it. The only excuse for making a useless thing is that one admires it intensely. All art is quite useless\" Oscar Wilde, The Picture of Dorian Gray\n"));
 	srand((unsigned)time(NULL));
 	m_bZoomNew = FALSE;
 	m_iFractalType = 0;

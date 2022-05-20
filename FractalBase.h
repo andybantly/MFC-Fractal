@@ -191,8 +191,8 @@ class CFractalBase
 public:
 	CFractalBase(CFractalParm FractalParm);
 	virtual ~CFractalBase() {};
-	virtual void operator() (int RowBeg,int RowEnd) {};
-	virtual void Apply(ULONG Iteration,int Column,int Row) {};
+	virtual void operator() (int RowBeg, int RowEnd) = 0;
+	virtual void Apply(ULONG Iteration, int Column, int Row) = 0;
 
 protected:
 	CFractalParm m_FractalParm;
