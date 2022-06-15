@@ -210,7 +210,7 @@ int CDIBFrame::GetHeight()
 	return m_y;
 }
 
-void CDIBFrame::SetPixelAndPaletteIndex(int X, int Y, BYTE R, BYTE G, BYTE B, int iPalette)
+void CDIBFrame::SetPixelAndPaletteIndex(int X, int Y, BYTE R, BYTE G, BYTE B, int iPalette) noexcept
 {
 	DWORD dwPos = (Y * m_x + X);
 	m_Palette[dwPos] = iPalette;
