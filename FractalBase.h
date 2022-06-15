@@ -19,8 +19,8 @@
 
 extern CComAutoCriticalSection g_MTBlock;
 
-const double g_dPi = atan(1.0) * 4.0;
-const double g_d2Pi = 2.0 * g_dPi;
+constexpr double g_dPi = 3.1415926535897932384626433832795;
+constexpr double g_d2Pi = 2.0 * g_dPi;
 
 // Class for common calculations
 class CCalcBase
@@ -44,25 +44,19 @@ public:
 			m_dTrapScaleY = dColors / m_dTrapEpsilonY;
 		m_bTrap = m_bTrapX || m_bTrapY;
 	};
-	~CCalcBase(){};
 
 protected:
-	/*virtual*/ bool Test(double dXSQ, double dYSQ) /* final */ // try to keep this baby as fast as possible.  virtualizing will slow by 35% or more
+	/*virtual*/ constexpr bool Test(double dXSQ, double dYSQ) noexcept /* final */ // try to keep this baby as fast as possible.  virtualizing will slow by 35% or more
 	{
-		switch (m_iMode)
-		{
-		case 1:
-			return (m_dXScale * dXSQ + m_dYScale * dYSQ) < m_dBailRadius;
-		case 2:
-			return (m_dXScale * dXSQ - m_dYScale * dYSQ) < m_dBailRadius;
-		case 3:
-			return (m_dYScale * dYSQ - m_dXScale * dXSQ) < m_dBailRadius;
-		case 4:
-			return (abs(m_dXScale * dXSQ - m_dYScale * dYSQ)) < m_dBailRadius;
-		default:
-			return false;
-		}
-		return false;
+		return (m_iMode == 1) ?
+			((m_dXScale * dXSQ + m_dYScale * dYSQ) < m_dBailRadius) :
+			(m_iMode == 2) ?
+			((m_dXScale * dXSQ - m_dYScale * dYSQ) < m_dBailRadius) :
+			(m_iMode == 3) ?
+			((m_dYScale * dYSQ - m_dXScale * dXSQ) < m_dBailRadius) :
+			(m_iMode == 4) ?
+			(abs(m_dXScale * dXSQ - m_dYScale * dYSQ) < m_dBailRadius) :
+			false;
 	}
 
 	double Radius()
@@ -70,7 +64,7 @@ protected:
 		return sqrt(m_XSQ + m_YSQ);
 	}
 
-	int Step(int J,double dR)
+	constexpr int Step(int J,double dR)
 	{
 		return max((int)((double)J - dR),1);
 	}
@@ -205,7 +199,7 @@ public:
 	CFractalCanvas(CFractalParm FractalParm,CDIBFrame & DisplayDIB);
 	virtual ~CFractalCanvas() {};
 	std::vector<CIteration> GetIterations();
-	virtual void Apply(ULONG Iteration, int Column, int Row) final
+	void Apply(ULONG Iteration, int Column, int Row) noexcept final
 	{
 		// Check for color scaling (calculations <> color palette)
 		LONG Color = Iteration;

@@ -43,7 +43,7 @@ public:
 
 	int GetWidth();
 	int GetHeight();
-	void SetPixelAndPaletteIndex(int X, int Y, BYTE R, BYTE G, BYTE B, int iPalette);
+	void SetPixelAndPaletteIndex(int X, int Y, BYTE R, BYTE G, BYTE B, int iPalette) noexcept;
 	void SetPixel(int X, int Y, BYTE R, BYTE G, BYTE B);
 	void SetPixelPaletteIndex(int X,int Y,int iPalette);
 	void GetPixelAndPaletteIndex(int X, int Y, BYTE & R, BYTE & G, BYTE & B, int & iPalette);
