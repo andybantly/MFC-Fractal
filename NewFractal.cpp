@@ -203,11 +203,11 @@ void CNewFractal::DoDataExchange(CDataExchange* pDX)
 	DDX_Text(pDX, IDC_EDIT_HEIGHT, m_iHeight);
 	DDV_MinMaxUInt(pDX, m_iHeight, 200, 16200);
 	DDX_Text(pDX, IDC_EDIT_CALC, m_nMaxCalc);
-	DDV_MinMaxInt(pDX, m_nMaxCalc, 1, 65536);
+	DDV_MinMaxUInt(pDX, m_nMaxCalc, 1, UINT_MAX);
 	DDX_Text(pDX, IDC_EDIT_MODE, m_iMode);
-	DDV_MinMaxInt(pDX, m_iMode, 1, 4);
+	DDV_MinMaxUInt(pDX, m_iMode, 1, 4);
 	DDX_Text(pDX, IDC_EDIT_ITER, m_iIterations);
-	DDV_MinMaxInt(pDX, m_iIterations, 1, m_nMaxCalc);
+	DDV_MinMaxUInt(pDX, m_iIterations, 1, m_nMaxCalc);
 	DDX_Check(pDX, IDC_CHECK_RED, m_bRed);
 	DDX_Check(pDX, IDC_CHECK_GREEN, m_bGreen);
 	DDX_Check(pDX, IDC_CHECK_BLUE, m_bBlue);
