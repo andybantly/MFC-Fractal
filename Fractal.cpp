@@ -181,13 +181,14 @@ BOOL CFractalApp::InitInstance()
 		return TRUE;
 	}
 
-	// Prevent an initial document from being created
-	cmdInfo.m_nShellCommand = CCommandLineInfo::FileNothing;
-
 	// Dispatch commands specified on the command line.  Will return FALSE if
 	// app was launched with /RegServer, /Register, /Unregserver or /Unregister.
 	if (!ProcessShellCommand(cmdInfo))
 		return FALSE;
+
+	// Prevent an initial document from being created
+	cmdInfo.m_nShellCommand = CCommandLineInfo::FileNothing;
+
 	// The main window has been initialized, so show and update it
 	pMainFrame->ShowWindow(m_nCmdShow);
 	pMainFrame->UpdateWindow();

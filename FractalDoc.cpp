@@ -1768,27 +1768,6 @@ void CFractalDoc::RenderFractal()
 					iY++;
 				}
 			}
-/*
-			CDIBFrame Pattern(MC,MR);
-			std::vector<COLORREF> arrRGB(iIterations);
-			for (int iRGB = 1;iRGB <= iIterations;++iRGB)
-				arrRGB[iRGB - 1] = RGB(m_RGB[0][iRGB],m_RGB[1][iRGB],m_RGB[2][iRGB]);
-			Pattern.GradientFill(&arrRGB[0],iIterations);
-
-			CDIBFrame AndyDIB(MC,MR);
-			CImage Img;
-			Img.Load(L"C:\\Users\\abantly\\AppData\\Local\\Temp\\Andy.png");
-			Img.BitBlt(AndyDIB,0,0,SRCCOPY);
-
-			// Create a Monochrome DIB from the DIB
-			CDIBFrame MonoDIB(MC,MR,1);
-			AndyDIB.DrawDDBTo(MonoDIB);
-
-			// Draw the Monochrome DIB with the brush where the bits are black (0)
-			HBRUSH hBrush = Pattern.DIBPatternBrush();
-			MonoDIB.DrawDDBTo(m_DisplayDIB,0,0,0xB8074A,hBrush);
-			DeleteObject(hBrush);
-*/
 		}
 
 		// Clean up the threads of work

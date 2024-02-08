@@ -42,7 +42,7 @@ public:
 			m_dTrapScaleX = dColors / m_dTrapEpsilonX;
 		if (m_bTrapY)
 			m_dTrapScaleY = dColors / m_dTrapEpsilonY;
-		m_bTrap = m_bTrapX || m_bTrapY;
+		m_bTrap = m_bTrapX | m_bTrapY;
 	};
 	~CCalcBase(){};
 
