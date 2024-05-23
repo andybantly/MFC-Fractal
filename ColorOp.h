@@ -37,7 +37,7 @@ public:
 
 private:
 	CColorOp(CColorOp & ColorOp);
-	CColorOp & CColorOp::operator = (CColorOp & ColorOp);
+	CColorOp & operator = (CColorOp & ColorOp);
 };
 
 // Driver thread that carries out the function
@@ -79,7 +79,7 @@ public:
 
 private:
 	CChangeColor(CChangeColor & ChangeColor);
-	CChangeColor & CChangeColor::operator = (CChangeColor & ChangeColor);
+	CChangeColor & operator = (CChangeColor & ChangeColor);
 
 private:
 	CDIBFrame & m_DisplayDIB;

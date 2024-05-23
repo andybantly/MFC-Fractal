@@ -245,7 +245,7 @@ void CImageButton::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
 	// Get the button's text.
 	CString csButtonText;
 	GetWindowText(csButtonText);
-	_bstr_t btButtonText = csButtonText;
+	_bstr_t btButtonText = csButtonText.AllocSysString();
 
 	// Adjust the text rectange (down and right) if the button is depressed
 	CRect ButtonRect = lpDrawItemStruct->rcItem;

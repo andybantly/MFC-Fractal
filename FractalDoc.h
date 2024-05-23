@@ -148,7 +148,7 @@ public: // properties
 	void SetBase(VARIANT_BOOL bBase);
 	void SetBaseColor(VARIANT_BOOL bBaseColor);
 	void SetOrbitColor(VARIANT_BOOL bOrbitColor);
-	void SetRGB(std::vector<std::vector<BYTE> > & vRGB) {m_RGB = vRGB;}
+	void SetRGB(std::vector<std::vector<BYTE> > vRGB) {m_RGB = vRGB;}
 	void SetRGB1(COLORREF RGB);
 	void SetRGB2(COLORREF RGB);
 	void SetRGB3(COLORREF RGB);

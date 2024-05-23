@@ -326,7 +326,8 @@ BOOL CFractalDoc::OnNewDocument()
 void CFractalDoc::OnCloseDocument()
 {
 	CMainFrame * pMainFrame = (CMainFrame *)(AfxGetApp()->GetMainWnd());
-	pMainFrame->SetCoord(CString());
+	CString cs("");
+	pMainFrame->SetCoord(cs);
 	CDocument::OnCloseDocument();
 }
 
@@ -680,11 +681,11 @@ void CFractalDoc::LoadImage(CArchive & ar,CString & csPictureName)
 		DIB.Init(iWidth,iHeight);
 		char * pDecodedBuffer = (LPSTR)DIB;
 		DWORD dwDecodedBytes;
-		std::auto_ptr<char> EncodedBuffer(new char[(size_t)(dwEncodedBytes)]);
-		char * pEncodedBuffer = EncodedBuffer.get();
+		char* pEncodedBuffer = new char[(size_t)(dwEncodedBytes)];
 		ar.Read(pEncodedBuffer,dwEncodedBytes);
 		CArithmeticEncoder AE;
 		bool bDecode = AE.DecodeBuffer(pEncodedBuffer,dwEncodedBytes,&pDecodedBuffer,&dwDecodedBytes,FALSE);
+		delete [] pEncodedBuffer;
 		if (bDecode)
 		{
 			// Test for the existance of the file
@@ -1584,11 +1585,11 @@ void CFractalDoc::RenderFractal()
 	double dStep = GetStep();
 	CComBSTR ccbImage;
 	ccbImage.Attach(GetImage());
-	CString csImage = ccbImage;
+	CString csImage(ccbImage);
 	BOOL bUseImage = GetUseImage();
 	CComBSTR ccbImage2;
 	ccbImage2.Attach(GetImage2());
-	CString csImage2 = ccbImage2;
+	CString csImage2(ccbImage2);
 	BOOL bUseImage2 = GetUseImage2();
 	int iFractalType = GetFractalType();
 	int iAlpha = GetAlpha();
@@ -1867,11 +1868,11 @@ void CFractalDoc::RenderFractal(double dLastXMin,double dLastXMax,double dLastYM
 	double dStep = GetStep();
 	CComBSTR ccbImage;
 	ccbImage.Attach(GetImage());
-	CString csImage = ccbImage;
+	CString csImage(ccbImage);
 	BOOL bUseImage = GetUseImage();
 	CComBSTR ccbImage2;
 	ccbImage2.Attach(GetImage2());
-	CString csImage2 = ccbImage2;
+	CString csImage2(ccbImage2);
 	BOOL bUseImage2 = GetUseImage2();
 	int iFractalType = GetFractalType();
 	int iAlpha = GetAlpha();
@@ -2252,6 +2253,16 @@ CFractalBase * CFractalDoc::ChooseFractal(CFractalParm & FractalParm)
 	return pMultiThreadedFractal;
 }
 
+bool CompareGT(const CIteration& LHS, const CIteration& RHS)
+{
+	return LHS > RHS;
+}
+
+bool CompareLT(const CIteration& LHS, const CIteration& RHS)
+{
+	return LHS < RHS;
+}
+
 // Apply the orbit sorting and drop unused colors effects based on the occurrence and counts of the orbits
 void CFractalDoc::SortDrop(std::vector<CIteration> Iterations)
 {
@@ -2296,15 +2307,9 @@ void CFractalDoc::SortDrop(std::vector<CIteration> Iterations)
 	if (bSmooth)
 	{
 		if (bSortOrder)
-		{
-			GreaterThan<CIteration> Comparator;
-			std::sort(Iterations.begin() + 1,Iterations.end(),Comparator);
-		}
+			std::sort(Iterations.begin() + 1, Iterations.end(), CompareGT);
 		else
-		{
-			LessThan<CIteration> Comparator;
-			std::sort(Iterations.begin() + 1,Iterations.end(),Comparator);
-		}
+			std::sort(Iterations.begin() + 1, Iterations.end(), CompareLT);
 	}
 
 	// Remap of colors based on sorted index

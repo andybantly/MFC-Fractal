@@ -53,7 +53,7 @@ public:
 	}
 	CFractalParm(CFractalParm & FractalParm) {*this = FractalParm;}
 	~CFractalParm(){};
-	CFractalParm & CFractalParm::operator = (CFractalParm & FractalParm)
+	CFractalParm & operator = (CFractalParm & FractalParm)
 	{
 		if (this != &FractalParm)
 		{
@@ -183,7 +183,7 @@ public:
 	}
 	CDecorative(const CDecorative & rhs) {*this = rhs;}
 	~CDecorative() {};
-	CDecorative & CDecorative::operator = (const CDecorative & rhs)
+	CDecorative & operator = (const CDecorative & rhs)
 	{
 		if (this != &rhs)
 		{
@@ -234,7 +234,7 @@ public:
 			m_csText(csText) {};
 	CDecorativeText(const CDecorativeText & rhs) {*this = rhs;}
 	~CDecorativeText() {};
-	CDecorativeText & CDecorativeText::operator = (const CDecorativeText & rhs)
+	CDecorativeText & operator = (const CDecorativeText & rhs)
 	{
 		if (this != &rhs)
 		{
@@ -307,7 +307,7 @@ public:
 			m_bTransparentColor(bTransparentColor), m_crTransparentColor(crTransparentColor) {};
 	CDecorativePicture(const CDecorativePicture & rhs) {*this = rhs;}
 	~CDecorativePicture() {};
-	CDecorativePicture & CDecorativePicture::operator = (const CDecorativePicture & rhs)
+	CDecorativePicture & operator = (const CDecorativePicture & rhs)
 	{
 		if (this != &rhs)
 		{
@@ -388,22 +388,4 @@ private:
 	int m_nIteration;
 	int m_iIteration;
 	COLORREF m_crRGB;
-};
-
-template <class T>
-struct LessThan : public std::binary_function<const T &,const T &,bool>
-{
-	bool operator()(const T & LHS,const T & RHS) const
-	{
-		return LHS < RHS;
-	}
-};
-
-template <class T>
-struct GreaterThan : public std::binary_function<const T &,const T &,bool>
-{
-	bool operator()(const T & LHS,const T & RHS) const
-	{
-		return LHS > RHS;
-	}
 };
