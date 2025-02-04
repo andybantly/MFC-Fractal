@@ -19,8 +19,7 @@
 
 extern CComAutoCriticalSection g_MTBlock;
 
-const double g_dPi = atan(1.0) * 4.0;
-const double g_d2Pi = 2.0 * g_dPi;
+const double g_d2Pi = 8.0 * atan(1.0);
 
 // Class for common calculations
 class CCalcBase
