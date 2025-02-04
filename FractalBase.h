@@ -47,7 +47,7 @@ public:
 	~CCalcBase(){};
 
 protected:
-	/*virtual*/ bool Test(double dXSQ, double dYSQ) /* final */ // try to keep this baby as fast as possible.  virtualizing will slow by 35% or more
+	bool Test(double dXSQ, double dYSQ, int iMode = 0) /* final */ // try to keep this baby as fast as possible.  virtualizing will slow by 35% or more
 	{
 		switch (m_iMode)
 		{

@@ -15,6 +15,7 @@
 #pragma once
 
 #include "FractalBase.h"
+#include "Number.h"
 
 class CMandelBrot : public CCalcBase
 {
@@ -39,6 +40,43 @@ protected:
 			X = XSQ - YSQ + dP;
 
 			if (nTrapCalc = TrapCalc(X,Y))
+			{
+				nCalc = nTrapCalc;
+				break;
+			}
+			nCalc++;
+		}
+		m_X = X;
+		m_Y = Y;
+		m_XSQ = XSQ;
+		m_YSQ = YSQ;
+		return nCalc;
+	}
+};
+
+class CMandelBrotFPU : public CCalcBase
+{
+public:
+	CMandelBrotFPU(CFractalParm FractalParm) : CCalcBase(FractalParm) {};
+	~CMandelBrotFPU() {};
+
+protected:
+	int Calc(int nMaxCalc, double dP, double dQ)
+	{
+		double X = 0.0;
+		double Y = 0.0;
+		double XSQ = 0.0;
+		double YSQ = 0.0;
+		int nCalc = 0, nTrapCalc = 0;
+
+		while ((nCalc < nMaxCalc) && Test(XSQ, YSQ))
+		{
+			XSQ = X * X;
+			YSQ = Y * Y;
+			Y = 2 * X * Y + dQ;
+			X = XSQ - YSQ + dP;
+
+			if (nTrapCalc = TrapCalc(X, Y))
 			{
 				nCalc = nTrapCalc;
 				break;

@@ -2166,7 +2166,7 @@ CFractalBase * CFractalDoc::ChooseFractal(CFractalParm & FractalParm)
 	BOOL bOrbitColor = GetOrbitColor();
 	double dStep = GetStep();
 
-	// Construct the Fractal object
+	// Initialize the Fractal object
 	CFractalBase * pMultiThreadedFractal = NULL;
 
 	if (iFractalType == 7)
