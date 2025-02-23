@@ -245,6 +245,7 @@
     <ClCompile Include="MainFrm.cpp" />
     <ClCompile Include="Mandelbrot.cpp" />
     <ClCompile Include="NewFractal.cpp" />
+    <ClCompile Include="Number.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -293,6 +294,7 @@
     <ClInclude Include="BitmapIcon.h" />
     <ClInclude Include="ChildFrm.h" />
     <ClInclude Include="ColorOp.h" />
+    <ClInclude Include="Constants.h" />
     <ClInclude Include="cpu.h" />
     <ClInclude Include="Crypt.h" />
     <ClInclude Include="EditColors.h" />
@@ -310,6 +312,7 @@
     <ClInclude Include="MainFrm.h" />
     <ClInclude Include="Mandelbrot.h" />
     <ClInclude Include="NewFractal.h" />
+    <ClInclude Include="Number.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />

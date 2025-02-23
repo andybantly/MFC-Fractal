@@ -93,6 +93,9 @@
     <ClCompile Include="FontCombo.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Number.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Midl Include="Fractal.idl">
@@ -188,6 +191,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="FontCombo.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Number.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Constants.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

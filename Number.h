@@ -8,6 +8,43 @@
 #include <thread>
 #include <functional>
 
+class CNumber
+{
+public:
+    CNumber();
+    CNumber(const std::string& strInput, bool bNum = true);
+
+    ~CNumber() {};
+
+public:
+    void SetNumber(const std::string& strInput);
+
+    std::string Contract(const std::string& strInput);
+    std::string Expand(const std::string& strInput);
+
+    static std::string WB();
+    const std::string& GetNumber() const;
+    const std::string& GetPhrase() const;
+
+    static void Init();
+    static bool TextEqual(const std::string& strLHS, const std::string& strRHS);
+    friend std::ostream& operator<<(std::ostream& out, const CNumber& Number);
+
+    // error C2338 : static_assert failed : 'Test writer must define specialization of ToString<const Q& q> 
+    // for your class class std::basic_string<wchar_t,struct std::char_traits<wchar_t>,class std::allocator<wchar_t> > 
+    // __cdecl Microsoft::VisualStudio::CppUnitTestFramework::ToString<class CNumber>(const class CNumber &).
+    static std::wstring ToString(const CNumber& Number);
+
+protected:
+    void Convert();
+    void Split(const std::string& strInput, std::vector<std::string>& vstrTokens, const char cFind = ' ');
+
+    bool m_bNegative;
+
+    std::string m_strNumber;
+    std::string m_strPhrase;
+};
+
 static uint8_t g_pow[8] = { 1,2,4,8,16,32,64,128 };
 
 class Number
@@ -18,14 +55,14 @@ protected:
     public:
         CByte()
         {
-            m_b.U = 0;
-            m_x.U = 0;
+            U = 0;
+            OF = 0;
         }
 
-        CByte(int32_t byte)
+        CByte(uint8_t byte)
         {
-            m_b.U = byte;
-            m_x.U = 0;
+            U = byte;
+            OF = 0;
         };
 
         CByte(const CByte& rhs)
@@ -37,8 +74,8 @@ protected:
         {
             if (this != &rhs)
             {
-                m_b = rhs.m_b;
-                m_x = rhs.m_x;
+                U = rhs.U;
+                OF = rhs.OF;
             }
             return *this;
         }
@@ -46,116 +83,78 @@ protected:
         CByte operator + (const CByte& rhs) const // Full-Adder
         {
             CByte Out;
-            Out.setOF(getOF()); // Is there a better way to handle Carry?
+            Out.OF = OF; // Kerry-In
 
-            Out.m_b.B.B1 = Out.m_x.X.X0 ^ (m_b.B.B1 ^ rhs.m_b.B.B1);  // SUM: Carry-in XOR (A XOR B)
-            Out.m_x.X.X1 = (m_b.B.B1 & rhs.m_b.B.B1) | (rhs.m_b.B.B1 & Out.m_x.X.X0) | (m_b.B.B1 & Out.m_x.X.X0); // CARRY: Carry-out AB OR BC OR ACin
-
-            Out.m_b.B.B2 = Out.m_x.X.X1 ^ (m_b.B.B2 ^ rhs.m_b.B.B2);
-            Out.m_x.X.X2 = (m_b.B.B2 & rhs.m_b.B.B2) | (rhs.m_b.B.B2 & Out.m_x.X.X1) | (m_b.B.B2 & Out.m_x.X.X1);
-
-            Out.m_b.B.B3 = Out.m_x.X.X2 ^ (m_b.B.B3 ^ rhs.m_b.B.B3);
-            Out.m_x.X.X3 = (m_b.B.B3 & rhs.m_b.B.B3) | (rhs.m_b.B.B3 & Out.m_x.X.X2) | (m_b.B.B3 & Out.m_x.X.X2);
-
-            Out.m_b.B.B4 = Out.m_x.X.X3 ^ (m_b.B.B4 ^ rhs.m_b.B.B4);
-            Out.m_x.X.X4 = (m_b.B.B4 & rhs.m_b.B.B4) | (rhs.m_b.B.B4 & Out.m_x.X.X3) | (m_b.B.B4 & Out.m_x.X.X3);
-
-            Out.m_b.B.B5 = Out.m_x.X.X4 ^ (m_b.B.B5 ^ rhs.m_b.B.B5);
-            Out.m_x.X.X5 = (m_b.B.B5 & rhs.m_b.B.B5) | (rhs.m_b.B.B5 & Out.m_x.X.X4) | (m_b.B.B5 & Out.m_x.X.X4);
-
-            Out.m_b.B.B6 = Out.m_x.X.X5 ^ (m_b.B.B6 ^ rhs.m_b.B.B6);
-            Out.m_x.X.X6 = (m_b.B.B6 & rhs.m_b.B.B6) | (rhs.m_b.B.B6 & Out.m_x.X.X5) | (m_b.B.B6 & Out.m_x.X.X5);
-
-            Out.m_b.B.B7 = Out.m_x.X.X6 ^ (m_b.B.B7 ^ rhs.m_b.B.B7);
-            Out.m_x.X.X7 = (m_b.B.B7 & rhs.m_b.B.B7) | (rhs.m_b.B.B7 & Out.m_x.X.X6) | (m_b.B.B7 & Out.m_x.X.X6);
-
-            Out.m_b.B.B8 = Out.m_x.X.X7 ^ (m_b.B.B8 ^ rhs.m_b.B.B8);
-            Out.m_x.X.X0 = (m_b.B.B8 & rhs.m_b.B.B8) | (rhs.m_b.B.B8 & Out.m_x.X.X7) | (m_b.B.B8 & Out.m_x.X.X7);
+            for (uint8_t ui = 1, uj = 0; ui != 0; ui <<= 1, ++uj)
+            {
+                Out.U |= (Out.OF ^ (((U & ui) >> uj) ^ ((rhs.U & ui) >> uj))) << uj;                                                // SUM:   Kerry-in XOR (A XOR B)
+                Out.OF = (((U & ui) >> uj) & Out.OF) | (((U & ui) >> uj) & ((rhs.U & ui) >> uj)) | (((rhs.U & ui) >> uj) & Out.OF); // CARRY: Kerry-out AB OR BC OR ACin
+            }
 
             return Out;
         }
-
+        
         CByte operator - (const CByte& rhs) const // Full-Subtractor
         {
             CByte Out;
-            Out.setOF(getOF()); // Is there a better way to handle borrowing?
+            Out.OF = OF; // Borrow-In
 
-            Out.m_b.B.B1 = (m_b.B.B1 ^ rhs.m_b.B.B1) ^ Out.m_x.X.X0; // DIFFERENCE: (A XOR B) XOR Borrow-in
-            Out.m_x.X.X1 = (~m_b.B.B1 & Out.m_x.X.X0) | (~m_b.B.B1 & rhs.m_b.B.B1) | (rhs.m_b.B.B1 & Out.m_x.X.X0); // BORROW: A'Borrow-in OR A'B OR AB (' = 2's complement)
-
-            Out.m_b.B.B2 = (m_b.B.B2 ^ rhs.m_b.B.B2) ^ Out.m_x.X.X1;
-            Out.m_x.X.X2 = (~m_b.B.B2 & Out.m_x.X.X1) | (~m_b.B.B2 & rhs.m_b.B.B2) | (rhs.m_b.B.B2 & Out.m_x.X.X1);
-
-            Out.m_b.B.B3 = (m_b.B.B3 ^ rhs.m_b.B.B3) ^ Out.m_x.X.X2;
-            Out.m_x.X.X3 = (~m_b.B.B3 & Out.m_x.X.X2) | (~m_b.B.B3 & rhs.m_b.B.B3) | (rhs.m_b.B.B3 & Out.m_x.X.X2);
-
-            Out.m_b.B.B4 = (m_b.B.B4 ^ rhs.m_b.B.B4) ^ Out.m_x.X.X3;
-            Out.m_x.X.X4 = (~m_b.B.B4 & Out.m_x.X.X3) | (~m_b.B.B4 & rhs.m_b.B.B4) | (rhs.m_b.B.B4 & Out.m_x.X.X3);
-
-            Out.m_b.B.B5 = (m_b.B.B5 ^ rhs.m_b.B.B5) ^ Out.m_x.X.X4;
-            Out.m_x.X.X5 = (~m_b.B.B5 & Out.m_x.X.X4) | (~m_b.B.B5 & rhs.m_b.B.B5) | (rhs.m_b.B.B5 & Out.m_x.X.X4);
-
-            Out.m_b.B.B6 = (m_b.B.B6 ^ rhs.m_b.B.B6) ^ Out.m_x.X.X5;
-            Out.m_x.X.X6 = (~m_b.B.B6 & Out.m_x.X.X5) | (~m_b.B.B6 & rhs.m_b.B.B6) | (rhs.m_b.B.B6 & Out.m_x.X.X5);
-
-            Out.m_b.B.B7 = (m_b.B.B7 ^ rhs.m_b.B.B7) ^ Out.m_x.X.X6;
-            Out.m_x.X.X7 = (~m_b.B.B7 & Out.m_x.X.X6) | (~m_b.B.B7 & rhs.m_b.B.B7) | (rhs.m_b.B.B7 & Out.m_x.X.X6);
-
-            Out.m_b.B.B8 = (m_b.B.B8 ^ rhs.m_b.B.B8) ^ Out.m_x.X.X7;
-            Out.m_x.X.X0 = (~m_b.B.B8 & Out.m_x.X.X7) | (~m_b.B.B8 & rhs.m_b.B.B8) | (rhs.m_b.B.B8 & Out.m_x.X.X7);
+            for (uint8_t ui = 1, uj = 0; ui != 0; ui <<= 1, ++uj)
+            {
+                Out.U |= (Out.OF ^ (((U & ui) >> uj) ^ ((rhs.U & ui) >> uj))) << uj;                                                  // DIFFERENCE: (A XOR B) XOR Borrow-in
+                Out.OF = (~((U & ui) >> uj) & Out.OF) | (~((U & ui) >> uj) & ((rhs.U & ui) >> uj)) | (((rhs.U & ui) >> uj) & Out.OF); // BORROW: A'Borrow-in OR A'B OR AB (' = 2s complement)
+            }
 
             return Out;
         }
 
-        unsigned getOF() const
-        {
-            return m_x.X.X0; // X0 used to indicate a carry/borrow
-        }
-
-        void setOF(const unsigned rhs)
-        {
-            m_x.X.X0 = rhs;
-        }
-
-        struct _Bits
-        {
-            unsigned B1 : 1;
-            unsigned B2 : 1;
-            unsigned B3 : 1;
-            unsigned B4 : 1;
-            unsigned B5 : 1;
-            unsigned B6 : 1;
-            unsigned B7 : 1;
-            unsigned B8 : 1;
-        };
-
-        struct _Xtra
-        {
-            unsigned X0 : 1;
-            unsigned X1 : 1;
-            unsigned X2 : 1;
-            unsigned X3 : 1;
-            unsigned X4 : 1;
-            unsigned X5 : 1;
-            unsigned X6 : 1;
-            unsigned X7 : 1;
-        };
-
-        union BITS
-        {
-            struct _Bits B;
-            uint8_t U;
-        };
-
-        union XTRA
-        {
-            struct _Xtra X;
-            uint8_t U;
-        };
-
-        BITS m_b;
-        XTRA m_x;
+        uint8_t U;
+        uint8_t OF;
     };
+
+    // Helper to convert to the internal format
+    void Convert(const int32_t iNumber)
+    {
+        static CByte _0(0), _255(255);
+
+        m_bNeg = iNumber < 0;
+        m_Bytes.resize(4, m_bNeg ? _255 : _0);
+
+        m_Bytes[0] = (uint32_t)(iNumber) & 0xFF;
+        m_Bytes[1] = ((uint32_t)(iNumber) >> 8) & 0xFF;
+        m_Bytes[2] = ((uint32_t)(iNumber) >> 16) & 0xFF;
+        m_Bytes[3] = (uint32_t)(iNumber) >> 24;
+
+        m_bNAN = false;
+    }
+
+public:
+    void Shl() // Shift Left (double)
+    {
+        size_t iByte = m_Bytes.size() - 1;
+        for (; iByte != 0; --iByte)
+        {
+            m_Bytes[iByte].U <<= 1;
+            m_Bytes[iByte].U |= m_Bytes[iByte - 1].U & 128 ? 1 : 0;
+        }
+        m_Bytes[iByte].U <<= 1;
+        m_bNeg = m_Bytes[m_Bytes.size() - 1].U && 128;
+    }
+
+    void Shr() // Shift Right (halve)
+    {
+        size_t iByte = 0;
+        for (; iByte != m_Bytes.size() - 1; ++iByte)
+        {
+            m_Bytes[iByte].U >>= 1;
+            if (m_Bytes[iByte + 1].U & 1)
+                m_Bytes[iByte].U |= 128;
+        }
+
+        m_Bytes[iByte].U >>= 1;
+        if (m_bNeg)
+            m_Bytes[iByte].U |= 128;
+    }
 
 public:
     Number() : m_bNeg(false), m_bNAN(true) {};
@@ -172,15 +171,22 @@ public:
 
     Number(const int32_t iNumber)
     {
-        ToBinary(std::to_string(iNumber));
+        Convert(iNumber);
     }
 
     Number(CByte ch, size_t size)
     {
-        m_bNeg = ch.m_b.B.B8;
-        m_Bytes.resize(size, m_bNeg ? CByte(255) : CByte(0));
+        static CByte _0(0), _255(255);
+
+        m_bNeg = (ch.U & 128) >> 7 ? true : false;
+        m_Bytes.resize(size, m_bNeg ? _255 : _0);
         m_Bytes[0] = ch;
         m_bNAN = false;
+    }
+
+    Number(const CNumber rhs)
+    {
+        ToBinary(rhs.GetNumber());
     }
 
     ~Number()
@@ -200,7 +206,7 @@ public:
 
     Number& operator = (const int32_t iNumber)
     {
-        ToBinary(std::to_string(iNumber));
+        Convert(iNumber);
         return *this;
     }
 
@@ -232,12 +238,12 @@ public:
 
         size_t l = m_Bytes.size(), r = rhs.m_Bytes.size();
         size_t stMax = l == r ? l : (l < r ? r : l);
-        CByte Zero(0), Neg1(255);
+        const static CByte Zero(0), Neg1(255);
         for (size_t st = stMax - 1; st != size_t(-1); --st)
         {
             CByte lb = st < l ? m_Bytes[st] : (m_bNeg ? Neg1 : Zero);
             CByte rb = st < r ? rhs.m_Bytes[st] : (rhs.m_bNeg ? Neg1 : Zero);
-            if (lb.m_b.U != rb.m_b.U)
+            if (lb.U != rb.U)
                 return false;
         }
 
@@ -262,13 +268,13 @@ public:
 
         size_t l = m_Bytes.size(), r = rhs.m_Bytes.size();
         size_t stMax = l == r ? l : (l < r ? r : l);
-        CByte Zero(0), Neg1(255);
+        const static CByte Zero(0), Neg1(255);
         for (size_t st = stMax - 1; st != size_t(-1); --st)
         {
             CByte lb = st < l ? m_Bytes[st] : (m_bNeg ? Neg1 : Zero);
             CByte rb = st < r ? rhs.m_Bytes[st] : (rhs.m_bNeg ? Neg1 : Zero);
-            if (lb.m_b.U != rb.m_b.U)
-                return m_bNeg ? lb.m_b.U < rb.m_b.U : lb.m_b.U < rb.m_b.U;
+            if (lb.U != rb.U)
+                return m_bNeg ? lb.U < rb.U : lb.U < rb.U;
         }
 
         return false;
@@ -289,96 +295,100 @@ public:
         return !(operator < (rhs));
     }
 
-    Number& operator ++ () // ++Number
+    Number Add(const Number& rhs, size_t st = 0) const
     {
-        if (m_bNAN)
+        if (m_bNAN || rhs.m_bNAN)
             throw("Invalid number");
 
-        *this = *this + Number(CByte(1), m_Bytes.size());
-        return *this;
+        size_t l = m_Bytes.size(), r = rhs.m_Bytes.size();
+        size_t stMin = l == r ? l : (l < r ? l : r);
+        size_t stMax = l == r ? l : (l < r ? r : l);
+        const static CByte Zero(0), Neg1(255);
+        Number out(Zero, stMax);
+        uint8_t of = 0;
+
+        CByte lb, rb;
+        for (; st < stMin; ++st)
+        {
+            lb = m_Bytes[st];
+            rb = rhs.m_Bytes[st];
+            CByte& ob = out.m_Bytes[st];
+            lb.OF = of;
+            ob = lb + rb;
+            of = ob.OF;
+            ob.OF = 0;
+        }
+
+        if (st < stMax)
+        {
+            for (; st < stMax; ++st)
+            {
+                lb = st < l ? m_Bytes[st] : (m_bNeg ? Neg1 : Zero);
+                rb = st < r ? rhs.m_Bytes[st] : (rhs.m_bNeg ? Neg1 : Zero);
+                CByte& ob = out.m_Bytes[st];
+                lb.OF = of;
+                ob = lb + rb;
+                of = ob.OF;
+                ob.OF = 0;
+            }
+        }
+
+        out.m_bNeg = (out.m_Bytes[out.GetSize() - 1].U & 128) >> 7 ? true : false;
+
+        return out;
     }
 
-    Number& operator -- ()
+    Number Sub(const Number& rhs, size_t st = 0) const
     {
-        if (m_bNAN)
+        if (m_bNAN || rhs.m_bNAN)
             throw("Invalid number");
 
-        *this = *this - Number(CByte(1), m_Bytes.size());
-        return *this;
-    }
+        size_t l = m_Bytes.size(), r = rhs.m_Bytes.size();
+        size_t stMin = l == r ? l : (l < r ? l : r);
+        size_t stMax = l == r ? l : (l < r ? r : l);
+        const static CByte Zero(0), Neg1(255);
+        Number out(Zero, stMax);
+        uint8_t of = 0;
 
-    Number& operator ++ (int)
-    {
-        if (m_bNAN)
-            throw("Invalid number");
+        CByte lb, rb;
+        for (; st < stMin; ++st)
+        {
+            lb = m_Bytes[st];
+            rb = rhs.m_Bytes[st];
+            CByte& ob = out.m_Bytes[st];
+            lb.OF = of;
+            ob = lb - rb;
+            of = ob.OF;
+            ob.OF = 0;
+        }
 
-        *this = *this + Number(CByte(1), m_Bytes.size());
-        return *this;
-    }
+        if (st < stMax)
+        {
+            for (; st < stMax; ++st)
+            {
+                lb = st < l ? m_Bytes[st] : (m_bNeg ? Neg1 : Zero);
+                rb = st < r ? rhs.m_Bytes[st] : (rhs.m_bNeg ? Neg1 : Zero);
+                CByte& ob = out.m_Bytes[st];
+                lb.OF = of;
+                ob = lb - rb;
+                of = ob.OF;
+                ob.OF = 0;
+            }
+        }
 
-    Number& operator -- (int)
-    {
-        if (m_bNAN)
-            throw("Invalid number");
+        out.m_bNeg = (out.m_Bytes[out.GetSize() - 1].U & 128) >> 7 ? true : false;
 
-        *this = *this - Number(CByte(1), m_Bytes.size());
-        return *this;
+        return out;
     }
 
     Number operator + (const Number& rhs) const
     {
-        if (m_bNAN || rhs.m_bNAN)
-            throw("Invalid number");
-
-        size_t l = m_Bytes.size(), r = rhs.m_Bytes.size();
-        size_t stMax = l == r ? l : (l < r ? r : l);
-        CByte Zero(0), Neg1(255);
-        Number out(Zero, stMax);
-        unsigned of = 0;
-        for (size_t st = 0; st < stMax; ++st)
-        {
-            CByte lb = st < l ? m_Bytes[st] : (m_bNeg ? Neg1 : Zero);
-            CByte rb = st < r ? rhs.m_Bytes[st] : (rhs.m_bNeg ? Neg1 : Zero);
-            CByte& ob = out.m_Bytes[st];
-            if (of)
-                lb.setOF(of);
-            ob = lb + rb;
-            of = ob.getOF();
-            if (of)
-                ob.setOF(0);
-        }
-
-        out.m_bNeg = out.m_Bytes[out.GetSize() - 1].m_b.B.B8;
-
-        return out;
+        return Add(rhs);
     }
 
     Number operator - (const Number& rhs) const
     {
-        if (m_bNAN || rhs.m_bNAN)
-            throw("Invalid number");
-
-        size_t l = m_Bytes.size(), r = rhs.m_Bytes.size();
-        size_t stMax = l == r ? l : (l < r ? r : l);
-        CByte Zero(0), Neg1(255);
-        Number out(Zero, stMax);
-        unsigned of = 0;
-        for (size_t st = 0; st < stMax; ++st)
-        {
-            CByte lb = st < l ? m_Bytes[st] : (m_bNeg ? Neg1 : Zero);
-            CByte rb = st < r ? rhs.m_Bytes[st] : (rhs.m_bNeg ? Neg1 : Zero);
-            CByte& ob = out.m_Bytes[st];
-            if (of)
-                lb.setOF(of);
-            ob = lb - rb;
-            of = ob.getOF();
-            if (of)
-                ob.setOF(0);
-        }
-
-        out.m_bNeg = out.m_Bytes[out.GetSize() - 1].m_b.B.B8;
-
-        return out;
+        return Sub(rhs);
     }
 
     Number operator * (const Number& rhs) const
@@ -386,27 +396,18 @@ public:
         if (m_bNAN || rhs.m_bNAN)
             throw("Invalid number");
 
-        const Number& lhs = *this;
+        size_t stMB = m_Bytes.size() > rhs.m_Bytes.size() ? m_Bytes.size() : rhs.m_Bytes.size();
+        Number out(CByte(0), stMB);
+        Number lhs = *this;
+        lhs.SetSize(stMB);
 
-        Number out(0, 4), one(1, 4), zero(0, 4);
-
-        Number loop = zero;
-        if (rhs.m_bNeg)
+        for (size_t iByte = 0, nBytes = rhs.m_Bytes.size(); iByte < nBytes; ++iByte)
         {
-            // - and -/+
-            while (loop > rhs)
+            for (uint8_t ui = 1; ui != 0; ui <<= 1)
             {
-                out = out - lhs;
-                loop = loop - one;
-            }
-        }
-        else
-        {
-            // + and -/+
-            while (loop < rhs)
-            {
-                out = out + lhs;
-                loop = loop + one;
+                if (ui & rhs.m_Bytes[iByte].U)
+                    out += lhs;
+                lhs.Shl();
             }
         }
 
@@ -418,151 +419,257 @@ public:
         if (m_bNAN || rhs.m_bNAN)
             throw("Invalid number");
 
-        const Number& lhs = *this;
+        const static Number _0(CByte(0), 1);
+        Number quot;
+        if (rhs == _0)
+            return quot;
 
-        Number tmp(0, 4), one(1, 4), zero(0, 4);
+        size_t stMB = m_Bytes.size() > rhs.m_Bytes.size() ? m_Bytes.size() : rhs.m_Bytes.size();
+        Number rem = *this;
+        Number rhsin = rhs;
+        rem.SetSize(stMB);
+        rhsin.SetSize(stMB);
 
-        Number loop;
-        if (rhs == zero)
-            return loop;
-        loop = zero;
-        if (lhs == zero)
-            return zero;
-
-        if (m_bNeg)
+        if (m_bNeg != rhs.m_bNeg)
         {
-            if (rhs.m_bNeg)
-            {
-                while (tmp > lhs)
-                {
-                    tmp = tmp + rhs;
-                    loop = loop + one;
-                }
+            rhsin = rhsin.TwosComplement();
+            rhsin.m_bNeg = m_bNeg;
+        }
 
-                if (tmp != lhs)
-                    loop = loop - one;
+        Number dbl = rhsin;
+        Number pow(m_bNeg == rhs.m_bNeg ? CByte(1) : CByte(-1), stMB);
+        size_t stn = 1;
+
+        if (!m_bNeg)
+        {
+            while (dbl < rem)
+            {
+                dbl.Shl();
+                if (dbl.m_bNeg)
+                    return quot;
+                pow.Shl();
+                ++stn;
             }
-            else
+
+            quot = _0;
+            for (size_t ndbl = stn; ndbl > 0; --ndbl)
             {
-                while (tmp > lhs)
+                if (dbl > rem)
                 {
-                    tmp = tmp - rhs;
-                    loop = loop - one;
+                    dbl.Shr();
+                    pow.Shr();
+                    continue;
                 }
 
-                if (tmp != lhs)
-                    loop = loop + one;
+                quot += pow;
+                rem -= dbl;
+
+                dbl.Shr();
+                pow.Shr();
             }
         }
         else
         {
-            if (rhs.m_bNeg)
+            while (dbl > rem)
             {
-                while (tmp < lhs)
-                {
-                    tmp = tmp - rhs;
-                    loop = loop - one;
-                }
-
-                if (tmp != lhs)
-                    loop = loop + one;
+                dbl.Shl();
+                if (!dbl.m_bNeg)
+                    return quot;
+                pow.Shl();
+                ++stn;
             }
-            else
+
+            quot = _0;
+            for (size_t ndbl = stn; ndbl > 0; --ndbl)
             {
-                while (tmp < lhs)
+                if (dbl < rem)
                 {
-                    tmp = tmp + rhs;
-                    loop = loop + one;
+                    dbl.Shr();
+                    pow.Shr();
+                    continue;
                 }
 
-                if (tmp != lhs)
-                    loop = loop - one;
+                quot += pow;
+                rem -= dbl;
+
+                dbl.Shr();
+                pow.Shr();
             }
         }
 
-        return loop;
+        return quot;
     }
 
     Number operator % (const Number& rhs) const
     {
         if (m_bNAN || rhs.m_bNAN)
             throw("Invalid number");
-
-        const Number& lhs = *this;
-
-        Number tmp(0, 4), one(1, 4), zero(0, 4);
-
+        const static Number _0(CByte(0), 1);
         Number rem;
-        if (rhs == zero)
+        if (rhs == _0)
             return rem;
-        rem = zero;
 
-        if (m_bNeg)
+        size_t stMB = m_Bytes.size() > rhs.m_Bytes.size() ? m_Bytes.size() : rhs.m_Bytes.size();
+        rem = *this;
+        Number rhsin = rhs;
+        rem.SetSize(stMB);
+        rhsin.SetSize(stMB);
+
+        if (m_bNeg != rhs.m_bNeg)
         {
-            if (rhs.m_bNeg)
-            {
-                while (tmp > lhs)
-                    tmp = tmp + rhs;
+            rhsin = rhsin.TwosComplement();
+            rhsin.m_bNeg = m_bNeg;
+        }
 
-                if (tmp != lhs)
-                {
-                    tmp = tmp - rhs;
-                    rem = lhs - tmp;
-                }
+        Number dbl = rhsin;
+        size_t stn = 1;
+
+        if (!m_bNeg)
+        {
+            while (dbl < rem)
+            {
+                dbl.Shl();
+                if (dbl.m_bNeg)
+                    return Number();
+                ++stn;
             }
-            else
-            {
-                while (tmp > lhs)
-                    tmp = tmp - rhs;
 
-                if (tmp != lhs)
+            for (size_t ndbl = stn; ndbl > 0; --ndbl)
+            {
+                if (dbl > rem)
                 {
-                    tmp = tmp + rhs;
-                    rem = lhs - tmp;
+                    dbl.Shr();
+                    continue;
                 }
+                rem -= dbl;
+                dbl.Shr();
             }
         }
         else
         {
-            if (rhs.m_bNeg)
+            while (dbl > rem)
             {
-                while (tmp < lhs)
-                    tmp = tmp - rhs;
-
-                if (tmp != lhs)
-                {
-                    tmp = tmp + rhs;
-                    rem = lhs - tmp;
-                }
+                dbl.Shl();
+                if (!dbl.m_bNeg)
+                    return Number();
+                ++stn;
             }
-            else
-            {
-                while (tmp < lhs)
-                    tmp = tmp + rhs;
 
-                if (tmp != lhs)
+            for (size_t ndbl = stn; ndbl > 0; --ndbl)
+            {
+                if (dbl < rem)
                 {
-                    tmp = tmp - rhs;
-                    rem = lhs - tmp;
+                    dbl.Shr();
+                    continue;
                 }
+                rem -= dbl;
+                dbl.Shr();
             }
         }
 
         return rem;
     }
 
-    void SetSize(size_t uiSize)
+    // pre/post increment/decrement
+    /*
+    The prefix increment/decrement operator (++/--) adds/subs one to its operand and this incremented value is the result of the expression.
+    The postfix increment/decrement operator (++/--)(int) adds/subs one to its operand and the previous value is the result of the expression
+    */
+
+    Number operator ++ ()
     {
-        m_Bytes.resize(uiSize, m_bNeg ? 255 : 0);
+        const static Number _1(1, 1);
+
+        if (m_bNAN)
+            throw("Invalid number");
+
+        *this += _1;
+        return *this;
     }
 
-    size_t GetSize()
+    Number operator -- ()
+    {
+        const static Number _1(1, 1);
+
+        if (m_bNAN)
+            throw("Invalid number");
+
+        *this -= 1;
+        return *this;
+    }
+
+    Number operator ++ (int)
+    {
+        const static Number _1(1, 1);
+
+        if (m_bNAN)
+            throw("Invalid number");
+
+        Number rhs = *this;
+        *this += _1;
+        return rhs;
+    }
+
+    Number operator -- (int)
+    {
+        const static Number _1(1, 1);
+
+        if (m_bNAN)
+            throw("Invalid number");
+
+        Number rhs = *this;
+        *this += _1;
+        return rhs;
+    }
+
+    Number operator , (const Number& rhs) const
+    {
+        return rhs;
+    }
+
+    Number operator += (const Number& rhs)
+    {
+        *this = *this + rhs;
+        return *this;
+    }
+
+    Number operator -= (const Number& rhs)
+    {
+        *this = *this - rhs;
+        return *this;
+    }
+
+    Number operator *= (const Number& rhs)
+    {
+        *this = *this * rhs;
+        return *this;
+    }
+
+    Number operator /= (const Number& rhs)
+    {
+        *this = *this / rhs;
+        return *this;
+    }
+
+    Number operator %= (const Number& rhs)
+    {
+        *this = *this % rhs;
+        return *this;
+    }
+
+    void SetSize(size_t size)
+    {
+        if (size != m_Bytes.size())
+            m_Bytes.resize(size, m_bNeg ? 255 : 0);
+    }
+
+    size_t GetSize() const
     {
         return m_Bytes.size();
     }
 
     // Conversion functions
-    Number TwosComplement()
+    Number TwosComplement() const
     {
         if (m_bNAN)
             throw("Invalid number");
@@ -573,7 +680,7 @@ public:
         uint8_t iByte = 0;
         do
         {
-            Out.m_Bytes[iByte].m_b.U = ~m_Bytes[iByte].m_b.U;
+            Out.m_Bytes[iByte].U = ~m_Bytes[iByte].U;
             iByte++;
         } while (iByte != size);
 
@@ -585,7 +692,7 @@ public:
         return Out;
     }
 
-    std::string ToDisplay()
+    std::string ToDisplay() const
     {
         if (m_bNAN)
             return "NAN";
@@ -631,7 +738,7 @@ public:
             if (bCarry)
                 mout.push_front(cOne);
 
-            if (m_Bytes[iByte].m_b.U & g_pow[iBit++]) // Evaluates to False=0 or True=one of 1,2,4,8,16,32,66,128
+            if (m_Bytes[iByte].U & g_pow[iBit++]) // Evaluates to False=0 or True=one of 1,2,4,8,16,32,66,128
             {
                 const std::string& strS1 = strNum;
                 const std::string& strS2 = strResult;
@@ -690,10 +797,34 @@ public:
                 iByte++;
                 iBit = 0;
             }
-
         } while (iByte != size);
 
         return strResult;
+    }
+
+    std::string ToBinary() const
+    {
+        size_t nBin = m_Bytes.size() * size_t(8);
+        std::string strBin(nBin, '0');
+
+        for (size_t iByte = 0, nBytes = m_Bytes.size(); iByte < nBytes; ++iByte, nBin -= 8)
+        {
+            for (size_t iBit = 0; iBit < 8; ++iBit)
+            {
+                if (g_pow[iBit] & m_Bytes[iByte].U)
+                    strBin[nBin - iBit - 1] = '1';
+            }
+        }
+
+        return strBin;
+    }
+
+    std::string ToPhrase() const;
+
+    friend std::ostream& operator << (std::ostream& out, Number& rhs)
+    {
+        out << rhs.ToDisplay();
+        return out;
     }
 
 protected:
@@ -702,7 +833,7 @@ protected:
     {
         if (strNumber.empty())
             throw("Invalid number");
-
+        
         if (strNumber[0] == '-')
         {
             if (strNumber.length() < 2)
@@ -817,12 +948,12 @@ protected:
         {
             m_Bytes.resize(size);
             for (size_t iByte = 0; iByte < size; ++iByte)
-                m_Bytes[iByte].m_b.U = vbytes[iByte];
+                m_Bytes[iByte].U = vbytes[iByte];
         }
         else
         {
             m_Bytes.resize(1);
-            m_Bytes[0].m_b.U = 0;
+            m_Bytes[0].U = 0;
         }
 
         if (m_bNeg)
@@ -830,9 +961,30 @@ protected:
 
         SetSize(max(GetSize(), size_t(4)));
     }
+    
+    protected:
+        std::vector<CByte> m_Bytes;
+        bool m_bNeg;
+        bool m_bNAN;
+};
 
-protected:
-    std::vector<CByte> m_Bytes;
-    bool m_bNeg;
-    bool m_bNAN;
+struct CILT
+{
+    struct Compare
+    {
+        bool operator() (const unsigned char& c1, const unsigned char& c2) const
+        {
+            return tolower(c1) < tolower(c2);
+        }
+    };
+
+    bool operator() (const std::string& strLhs, const std::string& strRhs) const
+    {
+        return std::lexicographical_compare
+        (
+            strLhs.begin(), strLhs.end(),
+            strRhs.begin(), strRhs.end(),
+            Compare()
+        );
+    }
 };
