@@ -156,6 +156,293 @@ public:
             m_Bytes[iByte].U |= 128;
     }
 
+    Number Add(const Number& rhs, size_t st = 0) const
+    {
+        if (m_bNAN || rhs.m_bNAN)
+            throw("Invalid number");
+
+        size_t l = m_Bytes.size(), r = rhs.m_Bytes.size();
+        size_t stMin = l == r ? l : (l < r ? l : r);
+        size_t stMax = l == r ? l : (l < r ? r : l);
+        const static CByte Zero(0), Neg1(255);
+        Number out(Zero, stMax);
+        uint8_t of = 0;
+
+        CByte lb, rb;
+        for (; st < stMin; ++st)
+        {
+            lb = m_Bytes[st];
+            rb = rhs.m_Bytes[st];
+            if (of == 0 && lb.U == 0 && rb.U == 0)
+                continue;
+            
+            of = (lb.OF = of, out.m_Bytes[st] = lb + rb, out.m_Bytes[st].OF);
+        }
+
+        for (; st < stMax; ++st)
+        {
+            lb = st < l ? m_Bytes[st] : (m_bNeg ? Neg1 : Zero);
+            rb = st < r ? rhs.m_Bytes[st] : (rhs.m_bNeg ? Neg1 : Zero);
+            if (of == 0 && lb.U == 0 && rb.U == 0)
+                continue;
+
+            of = (lb.OF = of, out.m_Bytes[st] = lb + rb, out.m_Bytes[st].OF);
+        }
+
+        out.m_bNeg = (out.m_Bytes[out.GetSize() - 1].U & 128) >> 7 ? true : false;
+
+        return out;
+    }
+
+    Number Sub(const Number& rhs, size_t st = 0) const
+    {
+        if (m_bNAN || rhs.m_bNAN)
+            throw("Invalid number");
+
+        size_t l = m_Bytes.size(), r = rhs.m_Bytes.size();
+        size_t stMin = l == r ? l : (l < r ? l : r);
+        size_t stMax = l == r ? l : (l < r ? r : l);
+        const static CByte Zero(0), Neg1(255);
+        Number out(Zero, stMax);
+        uint8_t of = 0;
+
+        CByte lb, rb;
+        for (; st < stMin; ++st)
+        {
+            lb = m_Bytes[st];
+            rb = rhs.m_Bytes[st];
+            if (of == 0 && lb.U == 0 && rb.U == 0)
+                continue;
+
+            of = (lb.OF = of, out.m_Bytes[st] = lb - rb, out.m_Bytes[st].OF);
+        }
+
+        for (; st < stMax; ++st)
+        {
+            lb = st < l ? m_Bytes[st] : (m_bNeg ? Neg1 : Zero);
+            rb = st < r ? rhs.m_Bytes[st] : (rhs.m_bNeg ? Neg1 : Zero);
+            if (of == 0 && lb.U == 0 && rb.U == 0)
+                continue;
+
+            of = (lb.OF = of, out.m_Bytes[st] = lb - rb, out.m_Bytes[st].OF);
+        }
+
+        out.m_bNeg = (out.m_Bytes[out.GetSize() - 1].U & 128) >> 7 ? true : false;
+
+        return out;
+    }
+
+    bool Equals(const Number& rhs) const
+    {
+        if (this == &rhs) // I AM ALWAYS EQUAL TOO MYSELF!
+            return true;
+
+        if (m_bNAN || rhs.m_bNAN)
+            return false;
+
+        if (m_bNeg != rhs.m_bNeg)
+            return false;
+
+        if (m_Bytes.size() != rhs.m_Bytes.size())
+            return false;
+
+        size_t l = m_Bytes.size(), r = rhs.m_Bytes.size();
+        size_t stMax = l == r ? l : (l < r ? r : l);
+        const static CByte Zero(0), Neg1(255);
+        for (size_t st = stMax - 1; st != size_t(-1); --st)
+        {
+            CByte lb = st < l ? m_Bytes[st] : (m_bNeg ? Neg1 : Zero);
+            CByte rb = st < r ? rhs.m_Bytes[st] : (rhs.m_bNeg ? Neg1 : Zero);
+            if (lb.U != rb.U)
+                return false;
+        }
+
+        return true;
+    }
+
+    bool LessThan(const Number& rhs) const
+    {
+        if (this == &rhs)
+            return false; // I CANT BE LESS THAN MYSELF!
+
+        if (m_bNAN || rhs.m_bNAN)
+            return false;
+
+        if (m_bNeg != rhs.m_bNeg)
+            return m_bNeg;
+
+        size_t l = m_Bytes.size(), r = rhs.m_Bytes.size();
+        size_t stMax = l == r ? l : (l < r ? r : l);
+        const static CByte Zero(0), Neg1(255);
+        for (size_t st = stMax - 1; st != size_t(-1); --st)
+        {
+            CByte lb = st < l ? m_Bytes[st] : (m_bNeg ? Neg1 : Zero);
+            CByte rb = st < r ? rhs.m_Bytes[st] : (rhs.m_bNeg ? Neg1 : Zero);
+            if (lb.U != rb.U)
+                return m_bNeg ? lb.U < rb.U : lb.U < rb.U;
+        }
+
+        return false;
+    }
+
+    Number TwosComplement() const
+    {
+        if (m_bNAN)
+            throw("Invalid number");
+
+        size_t size = m_Bytes.size();
+        Number Out(CByte(0), size), One(CByte(1), size);
+
+        uint8_t iByte = 0;
+        do
+        {
+            Out.m_Bytes[iByte].U = ~m_Bytes[iByte].U;
+            iByte++;
+        } while (iByte != size);
+
+        size_t sz = Out.m_Bytes.size();
+        Out = Out + One;
+        Out.m_Bytes.resize(sz);
+        Out.m_bNeg = m_bNeg;
+
+        return Out;
+    }
+
+    std::string ToDisplay() const
+    {
+        if (m_bNAN)
+            return "NAN";
+
+        if (m_bNeg)
+        {
+            Number Disp = TwosComplement();
+            Disp.m_bNeg = false;
+            return "-" + Disp.ToDisplay();
+        }
+
+        size_t size = m_Bytes.size();
+        std::string strResult = "0";
+
+        const uint8_t cZero = '0', cOne = '1', cDec = '.';
+        std::string strNum = "1";
+
+        uint8_t iByte = 0;
+        uint8_t iBit = 0;
+
+        do
+        {
+            uint8_t iProd;
+            std::deque<char> mout;
+            bool bCarry = false;
+            for (std::string::const_reverse_iterator crit2 = strNum.rbegin(); crit2 != strNum.rend(); )
+            {
+                uint8_t iMP = *crit2++ - cZero;
+                iProd = 2 * iMP;
+                if (bCarry)
+                {
+                    iProd++;
+                    bCarry = false;
+                }
+                if (iProd >= 10)
+                {
+                    iProd -= 10;
+                    bCarry = true;
+                }
+                mout.push_front(cZero + iProd);
+            }
+
+            if (bCarry)
+                mout.push_front(cOne);
+
+            if (m_Bytes[iByte].U & g_pow[iBit++]) // Evaluates to False=0 or True=one of 1,2,4,8,16,32,66,128
+            {
+                const std::string& strS1 = strNum;
+                const std::string& strS2 = strResult;
+
+                uint8_t iSum;
+                std::deque<char> Sum;
+                bool bCarry = false;
+
+                std::string::const_reverse_iterator S1_crend = strS1.rend();
+                std::string::const_reverse_iterator S2_crend = strS2.rend();
+
+                for (std::string::const_reverse_iterator S1_crit = strS1.rbegin(), S2_crit = strS2.rbegin();
+                    S1_crit != S1_crend || S2_crit != S2_crend;)
+                {
+                    uint8_t S1 = S1_crit != S1_crend ? *S1_crit++ : cZero;
+                    uint8_t S2 = S2_crit != S2_crend ? *S2_crit++ : cZero;
+
+                    if (S1 == cDec || S2 == cDec)
+                    {
+                        Sum.push_front(cDec);
+                        continue;
+                    }
+
+                    uint8_t N1 = S1 - cZero;
+                    uint8_t N2 = S2 - cZero;
+
+                    iSum = N1 + N2;
+
+                    if (bCarry)
+                    {
+                        iSum++;
+                        bCarry = false;
+                    }
+
+                    if (iSum >= 10)
+                    {
+                        iSum -= 10;
+                        bCarry = true;
+                    }
+
+                    Sum.push_front(cZero + iSum);
+                }
+
+                if (bCarry)
+                    Sum.push_front(cOne);
+
+                if (*Sum.begin() == cDec)
+                    Sum.push_front(cZero);
+
+                strResult = std::string(Sum.begin(), Sum.end());
+            }
+            strNum = std::string(mout.begin(), mout.end());
+
+            if (iBit == 8)
+            {
+                iByte++;
+                iBit = 0;
+            }
+        } while (iByte != size);
+
+        return strResult;
+    }
+
+    std::string ToBinary() const
+    {
+        size_t nBin = m_Bytes.size() * size_t(8);
+        std::string strBin(nBin, '0');
+
+        for (size_t iByte = 0, nBytes = m_Bytes.size(); iByte < nBytes; ++iByte, nBin -= 8)
+        {
+            for (size_t iBit = 0; iBit < 8; ++iBit)
+            {
+                if (g_pow[iBit] & m_Bytes[iByte].U)
+                    strBin[nBin - iBit - 1] = '1';
+            }
+        }
+
+        return strBin;
+    }
+
+    std::string ToPhrase() const;
+
+    friend std::ostream& operator << (std::ostream& out, Number& rhs)
+    {
+        out << rhs.ToDisplay();
+        return out;
+    }
+
 public:
     Number() : m_bNeg(false), m_bNAN(true) {};
 
@@ -176,7 +463,7 @@ public:
 
     Number(CByte ch, size_t size)
     {
-        static CByte _0(0), _255(255);
+        const static CByte _0(0), _255(255);
 
         m_bNeg = (ch.U & 128) >> 7 ? true : false;
         m_Bytes.resize(size, m_bNeg ? _255 : _0);
@@ -224,30 +511,7 @@ public:
 
     bool operator == (const Number& rhs) const
     {
-        if (this == &rhs) // I AM ALWAYS EQUAL TOO MYSELF!
-            return true;
-
-        if (m_bNAN || rhs.m_bNAN)
-            return false;
-
-        if (m_bNeg != rhs.m_bNeg)
-            return false;
-
-        if (m_Bytes.size() != rhs.m_Bytes.size())
-            return false;
-
-        size_t l = m_Bytes.size(), r = rhs.m_Bytes.size();
-        size_t stMax = l == r ? l : (l < r ? r : l);
-        const static CByte Zero(0), Neg1(255);
-        for (size_t st = stMax - 1; st != size_t(-1); --st)
-        {
-            CByte lb = st < l ? m_Bytes[st] : (m_bNeg ? Neg1 : Zero);
-            CByte rb = st < r ? rhs.m_Bytes[st] : (rhs.m_bNeg ? Neg1 : Zero);
-            if (lb.U != rb.U)
-                return false;
-        }
-
-        return true;
+        return Equals(rhs);
     }
 
     bool operator != (const Number& rhs) const
@@ -257,27 +521,7 @@ public:
 
     bool operator < (const Number& rhs) const
     {
-        if (this == &rhs)
-            return false; // I CANT BE LESS THAN MYSELF!
-
-        if (m_bNAN || rhs.m_bNAN)
-            return false;
-
-        if (m_bNeg != rhs.m_bNeg)
-            return m_bNeg;
-
-        size_t l = m_Bytes.size(), r = rhs.m_Bytes.size();
-        size_t stMax = l == r ? l : (l < r ? r : l);
-        const static CByte Zero(0), Neg1(255);
-        for (size_t st = stMax - 1; st != size_t(-1); --st)
-        {
-            CByte lb = st < l ? m_Bytes[st] : (m_bNeg ? Neg1 : Zero);
-            CByte rb = st < r ? rhs.m_Bytes[st] : (rhs.m_bNeg ? Neg1 : Zero);
-            if (lb.U != rb.U)
-                return m_bNeg ? lb.U < rb.U : lb.U < rb.U;
-        }
-
-        return false;
+        return LessThan(rhs);
     }
 
     bool operator <= (const Number& rhs) const
@@ -293,92 +537,6 @@ public:
     bool operator >= (const Number& rhs) const
     {
         return !(operator < (rhs));
-    }
-
-    Number Add(const Number& rhs, size_t st = 0) const
-    {
-        if (m_bNAN || rhs.m_bNAN)
-            throw("Invalid number");
-
-        size_t l = m_Bytes.size(), r = rhs.m_Bytes.size();
-        size_t stMin = l == r ? l : (l < r ? l : r);
-        size_t stMax = l == r ? l : (l < r ? r : l);
-        const static CByte Zero(0), Neg1(255);
-        Number out(Zero, stMax);
-        uint8_t of = 0;
-
-        CByte lb, rb;
-        for (; st < stMin; ++st)
-        {
-            lb = m_Bytes[st];
-            rb = rhs.m_Bytes[st];
-            CByte& ob = out.m_Bytes[st];
-            lb.OF = of;
-            ob = lb + rb;
-            of = ob.OF;
-            ob.OF = 0;
-        }
-
-        if (st < stMax)
-        {
-            for (; st < stMax; ++st)
-            {
-                lb = st < l ? m_Bytes[st] : (m_bNeg ? Neg1 : Zero);
-                rb = st < r ? rhs.m_Bytes[st] : (rhs.m_bNeg ? Neg1 : Zero);
-                CByte& ob = out.m_Bytes[st];
-                lb.OF = of;
-                ob = lb + rb;
-                of = ob.OF;
-                ob.OF = 0;
-            }
-        }
-
-        out.m_bNeg = (out.m_Bytes[out.GetSize() - 1].U & 128) >> 7 ? true : false;
-
-        return out;
-    }
-
-    Number Sub(const Number& rhs, size_t st = 0) const
-    {
-        if (m_bNAN || rhs.m_bNAN)
-            throw("Invalid number");
-
-        size_t l = m_Bytes.size(), r = rhs.m_Bytes.size();
-        size_t stMin = l == r ? l : (l < r ? l : r);
-        size_t stMax = l == r ? l : (l < r ? r : l);
-        const static CByte Zero(0), Neg1(255);
-        Number out(Zero, stMax);
-        uint8_t of = 0;
-
-        CByte lb, rb;
-        for (; st < stMin; ++st)
-        {
-            lb = m_Bytes[st];
-            rb = rhs.m_Bytes[st];
-            CByte& ob = out.m_Bytes[st];
-            lb.OF = of;
-            ob = lb - rb;
-            of = ob.OF;
-            ob.OF = 0;
-        }
-
-        if (st < stMax)
-        {
-            for (; st < stMax; ++st)
-            {
-                lb = st < l ? m_Bytes[st] : (m_bNeg ? Neg1 : Zero);
-                rb = st < r ? rhs.m_Bytes[st] : (rhs.m_bNeg ? Neg1 : Zero);
-                CByte& ob = out.m_Bytes[st];
-                lb.OF = of;
-                ob = lb - rb;
-                of = ob.OF;
-                ob.OF = 0;
-            }
-        }
-
-        out.m_bNeg = (out.m_Bytes[out.GetSize() - 1].U & 128) >> 7 ? true : false;
-
-        return out;
     }
 
     Number operator + (const Number& rhs) const
@@ -666,165 +824,6 @@ public:
     size_t GetSize() const
     {
         return m_Bytes.size();
-    }
-
-    // Conversion functions
-    Number TwosComplement() const
-    {
-        if (m_bNAN)
-            throw("Invalid number");
-
-        size_t size = m_Bytes.size();
-        Number Out(CByte(0), size), One(CByte(1), size);
-
-        uint8_t iByte = 0;
-        do
-        {
-            Out.m_Bytes[iByte].U = ~m_Bytes[iByte].U;
-            iByte++;
-        } while (iByte != size);
-
-        size_t sz = Out.m_Bytes.size();
-        Out = Out + One;
-        Out.m_Bytes.resize(sz);
-        Out.m_bNeg = m_bNeg;
-
-        return Out;
-    }
-
-    std::string ToDisplay() const
-    {
-        if (m_bNAN)
-            return "NAN";
-
-        if (m_bNeg)
-        {
-            Number Disp = TwosComplement();
-            Disp.m_bNeg = false;
-            return "-" + Disp.ToDisplay();
-        }
-
-        size_t size = m_Bytes.size();
-        std::string strResult = "0";
-
-        const uint8_t cZero = '0', cOne = '1', cDec = '.';
-        std::string strNum = "1";
-
-        uint8_t iByte = 0;
-        uint8_t iBit = 0;
-
-        do
-        {
-            uint8_t iProd;
-            std::deque<char> mout;
-            bool bCarry = false;
-            for (std::string::const_reverse_iterator crit2 = strNum.rbegin(); crit2 != strNum.rend(); )
-            {
-                uint8_t iMP = *crit2++ - cZero;
-                iProd = 2 * iMP;
-                if (bCarry)
-                {
-                    iProd++;
-                    bCarry = false;
-                }
-                if (iProd >= 10)
-                {
-                    iProd -= 10;
-                    bCarry = true;
-                }
-                mout.push_front(cZero + iProd);
-            }
-
-            if (bCarry)
-                mout.push_front(cOne);
-
-            if (m_Bytes[iByte].U & g_pow[iBit++]) // Evaluates to False=0 or True=one of 1,2,4,8,16,32,66,128
-            {
-                const std::string& strS1 = strNum;
-                const std::string& strS2 = strResult;
-
-                uint8_t iSum;
-                std::deque<char> Sum;
-                bool bCarry = false;
-
-                std::string::const_reverse_iterator S1_crend = strS1.rend();
-                std::string::const_reverse_iterator S2_crend = strS2.rend();
-
-                for (std::string::const_reverse_iterator S1_crit = strS1.rbegin(), S2_crit = strS2.rbegin();
-                    S1_crit != S1_crend || S2_crit != S2_crend;)
-                {
-                    uint8_t S1 = S1_crit != S1_crend ? *S1_crit++ : cZero;
-                    uint8_t S2 = S2_crit != S2_crend ? *S2_crit++ : cZero;
-
-                    if (S1 == cDec || S2 == cDec)
-                    {
-                        Sum.push_front(cDec);
-                        continue;
-                    }
-
-                    uint8_t N1 = S1 - cZero;
-                    uint8_t N2 = S2 - cZero;
-
-                    iSum = N1 + N2;
-
-                    if (bCarry)
-                    {
-                        iSum++;
-                        bCarry = false;
-                    }
-
-                    if (iSum >= 10)
-                    {
-                        iSum -= 10;
-                        bCarry = true;
-                    }
-
-                    Sum.push_front(cZero + iSum);
-                }
-
-                if (bCarry)
-                    Sum.push_front(cOne);
-
-                if (*Sum.begin() == cDec)
-                    Sum.push_front(cZero);
-
-                strResult = std::string(Sum.begin(), Sum.end());
-            }
-            strNum = std::string(mout.begin(), mout.end());
-
-            if (iBit == 8)
-            {
-                iByte++;
-                iBit = 0;
-            }
-        } while (iByte != size);
-
-        return strResult;
-    }
-
-    std::string ToBinary() const
-    {
-        size_t nBin = m_Bytes.size() * size_t(8);
-        std::string strBin(nBin, '0');
-
-        for (size_t iByte = 0, nBytes = m_Bytes.size(); iByte < nBytes; ++iByte, nBin -= 8)
-        {
-            for (size_t iBit = 0; iBit < 8; ++iBit)
-            {
-                if (g_pow[iBit] & m_Bytes[iByte].U)
-                    strBin[nBin - iBit - 1] = '1';
-            }
-        }
-
-        return strBin;
-    }
-
-    std::string ToPhrase() const;
-
-    friend std::ostream& operator << (std::ostream& out, Number& rhs)
-    {
-        out << rhs.ToDisplay();
-        return out;
     }
 
 protected:
