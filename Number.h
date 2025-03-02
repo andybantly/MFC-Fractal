@@ -1,4 +1,5 @@
 #pragma once
+#include "Constants.h"
 #include <map>
 #include <vector>
 #include <string>
@@ -7,155 +8,309 @@
 #include <ctime>
 #include <thread>
 #include <functional>
+#include <mutex>
 
-class CNumber
+///////////////////////////////////////////////////////////////////////////////////////////////////
+
+/*
+* CONSTANT/TYPEDEF MEANINGS
+* SHFT - Number of bits to left shift. BITWIDTH - 1 in value.
+* SHFM - Number of bits for multiplication. (3=8 bits, 4=16 bits, etc)
+* AND  - Number of bits for masking in shifting
+* NTH  - Maximum value of the internal type
+* UNUM - The mapping to the actual type used (change one place, changes many)
+*/
+#define BITWIDTH        32
+
+#define SHFT            31
+#define SHFM            5
+#define AND             0x80000000
+#define NTH             0xFFFFFFFF
+
+typedef uint32_t UNUM;  // The internal type is a 'unsigned number'
+
+struct CILT
 {
-public:
-    CNumber();
-    CNumber(const std::string& strInput, bool bNum = true);
-
-    ~CNumber() {};
-
-public:
-    void SetNumber(const std::string& strInput);
-
-    std::string Contract(const std::string& strInput);
-    std::string Expand(const std::string& strInput);
-
-    static std::string WB();
-    const std::string& GetNumber() const;
-    const std::string& GetPhrase() const;
-
-    static void Init();
-    static bool TextEqual(const std::string& strLHS, const std::string& strRHS);
-    friend std::ostream& operator<<(std::ostream& out, const CNumber& Number);
-
-    // error C2338 : static_assert failed : 'Test writer must define specialization of ToString<const Q& q> 
-    // for your class class std::basic_string<wchar_t,struct std::char_traits<wchar_t>,class std::allocator<wchar_t> > 
-    // __cdecl Microsoft::VisualStudio::CppUnitTestFramework::ToString<class CNumber>(const class CNumber &).
-    static std::wstring ToString(const CNumber& Number);
-
-protected:
-    void Convert();
-    void Split(const std::string& strInput, std::vector<std::string>& vstrTokens, const char cFind = ' ');
-
-    bool m_bNegative;
-
-    std::string m_strNumber;
-    std::string m_strPhrase;
+    struct Compare { bool operator() (const unsigned char& cl, const unsigned char& cr) const { return tolower(cl) < tolower(cr); } };
+    bool operator() (const std::string& sl, const std::string& sr) const { return std::lexicographical_compare(sl.begin(), sl.end(), sr.begin(), sr.end(), Compare()); }
 };
 
-static uint8_t g_pow[8] = { 1,2,4,8,16,32,64,128 };
+// Global singleton for number transcribing
+class NumberTranscriber
+{
+    NumberTranscriber() { init(); }
+    NumberTranscriber(const NumberTranscriber&) = delete;
+    NumberTranscriber& operator=(const NumberTranscriber&) = delete;
+
+    static std::unique_ptr<NumberTranscriber> instance;
+    static std::mutex mutex;
+    static std::map<std::string, std::string, CILT> mapWordTo99;
+    static std::map<std::string, std::string, CILT> mapWordTo100;
+    static void init();
+
+public:
+    static NumberTranscriber& getInstance();
+    static std::string Expand(const std::string& number);
+    static std::string Contract(const std::string& phrase);
+    static bool TextEqual(const std::string& s1, const std::string& s2);
+};
 
 class Number
 {
 protected:
-    class CByte
+    class DATA
     {
     public:
-        CByte()
-        {
-            U = 0;
-            OF = 0;
-        }
+        DATA(UNUM n = 0) : U(n), OF(0) {};
 
-        CByte(uint8_t byte)
-        {
-            U = byte;
-            OF = 0;
-        };
+        DATA(const DATA& data) { *this = data; }
 
-        CByte(const CByte& rhs)
+        DATA& operator = (const DATA& data)
         {
-            *this = rhs;
-        }
-
-        CByte& operator = (const CByte& rhs)
-        {
-            if (this != &rhs)
+            if (this != &data)
             {
-                U = rhs.U;
-                OF = rhs.OF;
+                U = data.U;
+                OF = data.OF;
             }
             return *this;
         }
 
-        CByte operator + (const CByte& rhs) const // Full-Adder
+        DATA operator + (const DATA& data) const // Full-Adder
         {
-            CByte Out;
+            DATA Out;
             Out.OF = OF; // Kerry-In
-
-            for (uint8_t ui = 1, uj = 0; ui != 0; ui <<= 1, ++uj)
+            for (UNUM ui = 1, uj = 0; ui != 0; ui <<= 1, ++uj)
             {
-                Out.U |= (Out.OF ^ (((U & ui) >> uj) ^ ((rhs.U & ui) >> uj))) << uj;                                                // SUM:   Kerry-in XOR (A XOR B)
-                Out.OF = (((U & ui) >> uj) & Out.OF) | (((U & ui) >> uj) & ((rhs.U & ui) >> uj)) | (((rhs.U & ui) >> uj) & Out.OF); // CARRY: Kerry-out AB OR BC OR ACin
+                Out.U |= (Out.OF ^ (((U & ui) >> uj) ^ ((data.U & ui) >> uj))) << uj;                                                  // SUM:   Kerry-in XOR (A XOR B)
+                Out.OF = (((U & ui) >> uj) & Out.OF) | (((U & ui) >> uj) & ((data.U & ui) >> uj)) | (((data.U & ui) >> uj) & Out.OF);  // CARRY: Kerry-out AB OR BC OR ACin
             }
-
             return Out;
         }
-        
-        CByte operator - (const CByte& rhs) const // Full-Subtractor
+
+        DATA operator - (const DATA& data) const // Full-Subtractor
         {
-            CByte Out;
+            DATA Out;
             Out.OF = OF; // Borrow-In
-
-            for (uint8_t ui = 1, uj = 0; ui != 0; ui <<= 1, ++uj)
+            for (UNUM ui = 1, uj = 0; ui != 0; ui <<= 1, ++uj)
             {
-                Out.U |= (Out.OF ^ (((U & ui) >> uj) ^ ((rhs.U & ui) >> uj))) << uj;                                                  // DIFFERENCE: (A XOR B) XOR Borrow-in
-                Out.OF = (~((U & ui) >> uj) & Out.OF) | (~((U & ui) >> uj) & ((rhs.U & ui) >> uj)) | (((rhs.U & ui) >> uj) & Out.OF); // BORROW: A'Borrow-in OR A'B OR AB (' = 2s complement)
+                Out.U |= (Out.OF ^ (((U & ui) >> uj) ^ ((data.U & ui) >> uj))) << uj;                                                   // DIFFERENCE: (A XOR B) XOR Borrow-in
+                Out.OF = (~((U & ui) >> uj) & Out.OF) | (~((U & ui) >> uj) & ((data.U & ui) >> uj)) | (((data.U & ui) >> uj) & Out.OF); // BORROW: A'Borrow-in OR A'B OR AB (' = 2s complement)
             }
-
             return Out;
         }
 
-        uint8_t U;
-        uint8_t OF;
+        bool ispow2(const UNUM n) const
+        {
+            return (n > 0) && (n & (n - 1)) == 0;
+        }
+
+        UNUM U;
+        UNUM OF;
     };
 
-    // Helper to convert to the internal format
-    void Convert(const int32_t iNumber)
+public:
+
+    Number() : m_bNeg(false), m_bNAN(true) {};
+
+    Number(const char* pstrNumber) { ToBinary(pstrNumber); }
+
+    Number(const std::string& strNumber) { ToBinary(strNumber); }
+
+    Number(const int32_t iNumber) { Convert(iNumber); }
+
+    Number(DATA ch, size_t size)
     {
-        static CByte _0(0), _255(255);
+        const static DATA _0(0), _255(NTH);
 
-        m_bNeg = iNumber < 0;
-        m_Bytes.resize(4, m_bNeg ? _255 : _0);
-
-        m_Bytes[0] = (uint32_t)(iNumber) & 0xFF;
-        m_Bytes[1] = ((uint32_t)(iNumber) >> 8) & 0xFF;
-        m_Bytes[2] = ((uint32_t)(iNumber) >> 16) & 0xFF;
-        m_Bytes[3] = (uint32_t)(iNumber) >> 24;
-
+        m_bNeg = (ch.U & AND) >> SHFT ? true : false;
+        m_Bytes.resize(size, m_bNeg ? _255 : _0);
+        m_Bytes[0] = ch;
         m_bNAN = false;
     }
 
+    Number(const Number& rhs) { *this = rhs; }
+
+    ~Number() {}
+
+    Number& operator = (const Number& rhs)
+    {
+        if (this != &rhs)
+        {
+            m_Bytes = rhs.m_Bytes;
+            m_bNeg = rhs.m_bNeg;
+            m_bNAN = rhs.m_bNAN;
+        }
+        return *this;
+    }
+
+protected:
+
+    void ToBinary(const std::string& strNumberIn)
+    {
+        if (strNumberIn.empty())
+            throw("Invalid number");
+
+        std::string strNumber = NumberTranscriber::getInstance().Contract(strNumberIn);
+        if (strNumber.empty())
+            strNumber = strNumberIn;
+
+        m_bNeg = false;
+        m_bNAN = false;
+
+        bool bNeg = false;
+        if (strNumber[0] == '-')
+        {
+            if (strNumber.length() < 2)
+                throw("Invalid number");
+            bNeg = true;
+        }
+
+        std::string strInput = strNumber.substr(bNeg ? 1 : 0);
+        if (strInput.empty())
+            throw("Invalid number");
+
+        std::string strOut;
+        UNUM idnm = 0;
+        UNUM val = 0;
+        UNUM pow = 1;
+        std::vector<UNUM> vbytes;
+
+        std::string::const_iterator cit = strInput.begin();
+        for (;;)
+        {
+            // Compute the denominator of the division
+            idnm = idnm * 10 + *cit - '0';
+            if (idnm < 2 && cit + 1 != strInput.end())
+            {
+                // Carry a 0
+                if (!strOut.empty())
+                    strOut += '0';
+
+                // The denominator has to be greater than 2 now
+                idnm = idnm * 10 + (*(cit + 1) - '0');
+
+                // Move to the next character
+                cit += 2;
+            }
+            else
+            {
+                // Check for completion the conversion
+                if (strInput.length() == 1 && idnm < 2)
+                {
+                    /////////////////////////////////////
+                    // Byte stream 0-255
+
+                    if (idnm)
+                        val += pow;
+                    pow <<= 1;
+                    if (!pow)
+                    {
+                        vbytes.push_back(val);
+                        val = 0;
+                        pow = 1;
+                    }
+
+                    /////////////////////////////////////
+
+                    break;
+                }
+
+                // Move to the next character
+                cit++;
+            }
+
+            // Append the digit to the output that becomes the new input from integer division by 2
+            strOut += '0' + idnm / 2;
+            idnm = idnm % 2;
+
+            // Has the input been processed
+            if (cit == strInput.end())
+            {
+                /////////////////////////////////////
+                // Byte stream 0-255
+
+                if (idnm)
+                    val += pow;
+                pow <<= 1;
+                if (!pow)
+                {
+                    vbytes.push_back(val);
+                    val = 0;
+                    pow = 1;
+                }
+
+                /////////////////////////////////////
+
+                // Reset and restart (but not the incremental bytes, they carry over)
+                strInput = strOut;
+                strOut.clear();
+                idnm = 0;
+                cit = strInput.begin();
+            }
+        }
+
+        if (val)
+            vbytes.push_back(val);
+
+        size_t size = UNUM(vbytes.size());
+        if (size)
+        {
+            m_Bytes.resize(size);
+            for (size_t iByte = 0; iByte < size; ++iByte)
+                m_Bytes[iByte].U = vbytes[iByte];
+        }
+        else
+        {
+            m_Bytes.resize(1);
+            m_Bytes[0].U = 0;
+        }
+
+        if (bNeg)
+            *this = TwosComplement();
+
+        SetSize(GetSize() + 1);
+    }
+
+    // Helper to convert to the internal format
+#if BITWIDTH == 32
+    void Convert(const int32_t iNumber)
+    {
+        m_bNAN = false;
+
+        m_Bytes.resize(2);
+        m_Bytes[0] = (uint32_t)(iNumber); // 32
+
+        m_bNeg = iNumber < 0;
+        m_Bytes[1] = m_bNeg ? NTH : 0;
+    }
+#elif BITWIDTH == 16
+    void Convert(const int32_t iNumber)
+    {
+        m_bNAN = false;
+
+        m_Bytes.resize(3);
+        m_Bytes[0] = ((uint32_t)(iNumber)) & 0x0000FFFF; // 16
+        m_Bytes[1] = ((uint32_t)(iNumber) >> 0x10); // 32
+
+        m_bNeg = iNumber < 0;
+        m_Bytes[2] = m_bNeg ? NTH : 0;
+    }
+#elif BITWIDTH == 8
+    void Convert(const int32_t iNumber)
+    {
+        m_bNAN = false;
+
+        m_Bytes.resize(5);
+        m_Bytes[0] = (uint32_t)(iNumber) & 0xFF;
+        m_Bytes[1] = ((uint32_t)(iNumber) >> 0x08) & 0xFF;
+        m_Bytes[2] = ((uint32_t)(iNumber) >> 0x10) & 0xFF;
+        m_Bytes[3] = (uint32_t)(iNumber) >> 0x18;
+
+        m_Bytes[4] = (m_bNeg = iNumber < 0) ? NTH : 0;
+    }
+#endif
+
 public:
-    void Shl() // Shift Left (double)
-    {
-        size_t iByte = m_Bytes.size() - 1;
-        for (; iByte != 0; --iByte)
-        {
-            m_Bytes[iByte].U <<= 1;
-            m_Bytes[iByte].U |= m_Bytes[iByte - 1].U & 128 ? 1 : 0;
-        }
-        m_Bytes[iByte].U <<= 1;
-        m_bNeg = m_Bytes[m_Bytes.size() - 1].U && 128;
-    }
-
-    void Shr() // Shift Right (halve)
-    {
-        size_t iByte = 0;
-        for (; iByte != m_Bytes.size() - 1; ++iByte)
-        {
-            m_Bytes[iByte].U >>= 1;
-            if (m_Bytes[iByte + 1].U & 1)
-                m_Bytes[iByte].U |= 128;
-        }
-
-        m_Bytes[iByte].U >>= 1;
-        if (m_bNeg)
-            m_Bytes[iByte].U |= 128;
-    }
-
     Number Add(const Number& rhs, size_t st = 0) const
     {
         if (m_bNAN || rhs.m_bNAN)
@@ -164,18 +319,16 @@ public:
         size_t l = m_Bytes.size(), r = rhs.m_Bytes.size();
         size_t stMin = l == r ? l : (l < r ? l : r);
         size_t stMax = l == r ? l : (l < r ? r : l);
-        const static CByte Zero(0), Neg1(255);
+        const static DATA Zero(0), Neg1(NTH);
         Number out(Zero, stMax);
-        uint8_t of = 0;
+        UNUM of = 0;
 
-        CByte lb, rb;
+        DATA lb, rb;
         for (; st < stMin; ++st)
         {
             lb = m_Bytes[st];
             rb = rhs.m_Bytes[st];
-            if (of == 0 && lb.U == 0 && rb.U == 0)
-                continue;
-            
+            if (of == 0 && lb.U == 0 && rb.U == 0) continue;
             of = (lb.OF = of, out.m_Bytes[st] = lb + rb, out.m_Bytes[st].OF);
         }
 
@@ -183,13 +336,11 @@ public:
         {
             lb = st < l ? m_Bytes[st] : (m_bNeg ? Neg1 : Zero);
             rb = st < r ? rhs.m_Bytes[st] : (rhs.m_bNeg ? Neg1 : Zero);
-            if (of == 0 && lb.U == 0 && rb.U == 0)
-                continue;
-
+            if (of == 0 && lb.U == 0 && rb.U == 0) continue;
             of = (lb.OF = of, out.m_Bytes[st] = lb + rb, out.m_Bytes[st].OF);
         }
 
-        out.m_bNeg = (out.m_Bytes[out.GetSize() - 1].U & 128) >> 7 ? true : false;
+        out.m_bNeg = (out.m_Bytes[out.GetSize() - 1].U & AND) >> SHFT ? true : false; // Shift nbits - 1  to match size of data
 
         return out;
     }
@@ -202,18 +353,16 @@ public:
         size_t l = m_Bytes.size(), r = rhs.m_Bytes.size();
         size_t stMin = l == r ? l : (l < r ? l : r);
         size_t stMax = l == r ? l : (l < r ? r : l);
-        const static CByte Zero(0), Neg1(255);
+        const static DATA Zero(0), Neg1(NTH);
         Number out(Zero, stMax);
-        uint8_t of = 0;
+        UNUM of = 0;
 
-        CByte lb, rb;
+        DATA lb, rb;
         for (; st < stMin; ++st)
         {
             lb = m_Bytes[st];
             rb = rhs.m_Bytes[st];
-            if (of == 0 && lb.U == 0 && rb.U == 0)
-                continue;
-
+            if (of == 0 && lb.U == 0 && rb.U == 0) continue;
             of = (lb.OF = of, out.m_Bytes[st] = lb - rb, out.m_Bytes[st].OF);
         }
 
@@ -221,15 +370,243 @@ public:
         {
             lb = st < l ? m_Bytes[st] : (m_bNeg ? Neg1 : Zero);
             rb = st < r ? rhs.m_Bytes[st] : (rhs.m_bNeg ? Neg1 : Zero);
-            if (of == 0 && lb.U == 0 && rb.U == 0)
-                continue;
-
+            if (of == 0 && lb.U == 0 && rb.U == 0) continue;
             of = (lb.OF = of, out.m_Bytes[st] = lb - rb, out.m_Bytes[st].OF);
         }
 
-        out.m_bNeg = (out.m_Bytes[out.GetSize() - 1].U & 128) >> 7 ? true : false;
+        out.m_bNeg = (out.m_Bytes[out.GetSize() - 1].U & AND) >> SHFT ? true : false;
 
         return out;
+    }
+
+    Number Mul(const Number& rhs) const
+    {
+        if (m_bNAN || rhs.m_bNAN)
+            throw("Invalid number");
+
+        bool bND = m_Bytes.size() >= rhs.m_Bytes.size();
+
+        size_t stMB = bND ? m_Bytes.size() : rhs.m_Bytes.size();
+        Number prod(DATA(0), stMB);
+        Number mulp = *this;
+        Number mulc = rhs;
+
+        if (bND) // N =>= D
+        {
+            for (size_t iByte = 0, nBytes = mulc.m_Bytes.size(); iByte < nBytes; ++iByte)
+            {
+                for (UNUM ui = 1; ui != 0; ui <<= 1)
+                {
+                    if (ui & mulc.m_Bytes[iByte].U)
+                        prod += mulp;
+                    mulp.Shl();
+                }
+            }
+        }
+        else // D > N
+        {
+            for (size_t iByte = 0, nBytes = mulp.m_Bytes.size(); iByte < nBytes; ++iByte)
+            {
+                for (UNUM ui = 1; ui != 0; ui <<= 1)
+                {
+                    if (ui & mulp.m_Bytes[iByte].U)
+                        prod += mulc;
+                    mulc.Shl();
+                }
+            }
+        }
+
+        return prod;
+    }
+
+    Number Div(const Number& rhs) const
+    {
+        if (m_bNAN || rhs.m_bNAN)
+            throw("Invalid number");
+
+        const static Number _0(DATA(0), 1);
+        Number quot;
+        if (rhs == _0)
+            return quot;
+
+        size_t stMB = m_Bytes.size() > rhs.m_Bytes.size() ? m_Bytes.size() : rhs.m_Bytes.size();
+
+        Number rem = *this;
+        rem.SetSize(stMB);
+
+        Number rhsin = rhs;
+        if (m_bNeg != rhs.m_bNeg)
+            rhsin = rhsin.TwosComplement();
+
+        Number dbl = rhsin;
+        dbl.SetSize(stMB);
+
+        Number pow(m_bNeg == rhs.m_bNeg ? DATA(1) : DATA(-1), stMB);
+        size_t stn = 0;
+
+        size_t dlh = dbl.MSb();
+        if (dlh != size_t(-1))
+        {
+            size_t rlh = rem.MSb();
+            if (rlh != size_t(-1))
+            {
+                if (rlh > dlh)
+                {
+                    size_t nb = rlh - dlh + 1;
+                    dbl.Shl(-1, nb);
+                    pow.Shl(-1, nb);
+                    stn = nb;
+                }
+            }
+        }
+
+        if (!m_bNeg)
+        {
+            while (dbl < rem)
+            {
+                dbl.Shl();
+                pow.Shl(stn++);
+            }
+
+            quot = _0;
+            for (size_t ndbl = stn + 1; ndbl > 0; --ndbl)
+            {
+                if (dbl > rem)
+                {
+                    dbl.Shr();
+                    pow.Shr(stn--);
+                    continue;
+                }
+
+                quot = quot.Add(pow, stn >> SHFM);
+                rem -= dbl;
+
+                dbl.Shr();
+                pow.Shr(stn--);
+            }
+        }
+        else
+        {
+            while (dbl > rem)
+            {
+                dbl.Shl();
+                pow.Shl(stn++);
+            }
+
+            quot = _0;
+            for (size_t ndbl = stn + 1; ndbl > 0; --ndbl)
+            {
+                if (dbl < rem)
+                {
+                    dbl.Shr();
+                    pow.Shr(stn--);
+                    continue;
+                }
+
+                quot = quot.Add(pow, stn >> SHFM);
+                rem -= dbl;
+
+                dbl.Shr();
+                pow.Shr(stn--);
+            }
+        }
+
+        return quot;
+    }
+
+    Number Mod(const Number& rhs) const
+    {
+        if (m_bNAN || rhs.m_bNAN)
+            throw("Invalid number");
+
+        const static Number _0(DATA(0), 1);
+        Number quot;
+        if (rhs == _0)
+            return quot;
+
+        size_t stMB = m_Bytes.size() > rhs.m_Bytes.size() ? m_Bytes.size() : rhs.m_Bytes.size();
+
+        Number rem = *this;
+        rem.SetSize(stMB);
+
+        Number rhsin = rhs;
+        if (m_bNeg != rhs.m_bNeg)
+            rhsin = rhsin.TwosComplement();
+
+        Number dbl = rhsin;
+        dbl.SetSize(stMB);
+
+        Number pow(m_bNeg == rhs.m_bNeg ? DATA(1) : DATA(-1), stMB);
+        size_t stn = 0;
+
+        size_t dlh = dbl.MSb();
+        if (dlh != size_t(-1))
+        {
+            size_t rlh = rem.MSb();
+            if (rlh != size_t(-1))
+            {
+                if (rlh > dlh)
+                {
+                    size_t nb = rlh - dlh + 1;
+                    dbl.Shl(-1, nb);
+                    pow.Shl(-1, nb);
+                    stn = nb;
+                }
+            }
+        }
+
+        if (!m_bNeg)
+        {
+            while (dbl < rem)
+            {
+                dbl.Shl();
+                pow.Shl(stn++);
+            }
+
+            quot = _0;
+            for (size_t ndbl = stn + 1; ndbl > 0; --ndbl)
+            {
+                if (dbl > rem)
+                {
+                    dbl.Shr();
+                    pow.Shr(stn--);
+                    continue;
+                }
+
+                quot = quot.Add(pow, stn >> SHFM);
+                rem -= dbl;
+
+                dbl.Shr();
+                pow.Shr(stn--);
+            }
+        }
+        else
+        {
+            while (dbl > rem)
+            {
+                dbl.Shl();
+                pow.Shl(stn++);
+            }
+
+            quot = _0;
+            for (size_t ndbl = stn + 1; ndbl > 0; --ndbl)
+            {
+                if (dbl < rem)
+                {
+                    dbl.Shr();
+                    pow.Shr(stn--);
+                    continue;
+                }
+
+                quot = quot.Add(pow, stn >> SHFM);
+                rem -= dbl;
+
+                dbl.Shr();
+                pow.Shr(stn--);
+            }
+        }
+
+        return rem;
     }
 
     bool Equals(const Number& rhs) const
@@ -248,11 +625,11 @@ public:
 
         size_t l = m_Bytes.size(), r = rhs.m_Bytes.size();
         size_t stMax = l == r ? l : (l < r ? r : l);
-        const static CByte Zero(0), Neg1(255);
+        const static DATA Zero(0), Neg1(NTH);
         for (size_t st = stMax - 1; st != size_t(-1); --st)
         {
-            CByte lb = st < l ? m_Bytes[st] : (m_bNeg ? Neg1 : Zero);
-            CByte rb = st < r ? rhs.m_Bytes[st] : (rhs.m_bNeg ? Neg1 : Zero);
+            DATA lb = st < l ? m_Bytes[st] : (m_bNeg ? Neg1 : Zero);
+            DATA rb = st < r ? rhs.m_Bytes[st] : (rhs.m_bNeg ? Neg1 : Zero);
             if (lb.U != rb.U)
                 return false;
         }
@@ -273,11 +650,11 @@ public:
 
         size_t l = m_Bytes.size(), r = rhs.m_Bytes.size();
         size_t stMax = l == r ? l : (l < r ? r : l);
-        const static CByte Zero(0), Neg1(255);
+        const static DATA Zero(0), Neg1(NTH);
         for (size_t st = stMax - 1; st != size_t(-1); --st)
         {
-            CByte lb = st < l ? m_Bytes[st] : (m_bNeg ? Neg1 : Zero);
-            CByte rb = st < r ? rhs.m_Bytes[st] : (rhs.m_bNeg ? Neg1 : Zero);
+            DATA lb = st < l ? m_Bytes[st] : (m_bNeg ? Neg1 : Zero);
+            DATA rb = st < r ? rhs.m_Bytes[st] : (rhs.m_bNeg ? Neg1 : Zero);
             if (lb.U != rb.U)
                 return m_bNeg ? lb.U < rb.U : lb.U < rb.U;
         }
@@ -291,151 +668,125 @@ public:
             throw("Invalid number");
 
         size_t size = m_Bytes.size();
-        Number Out(CByte(0), size), One(CByte(1), size);
+        Number Out(DATA(0), size);
+        const static Number _1(DATA(1), 1);
 
-        uint8_t iByte = 0;
+        UNUM iByte = 0;
         do
         {
             Out.m_Bytes[iByte].U = ~m_Bytes[iByte].U;
             iByte++;
         } while (iByte != size);
 
-        size_t sz = Out.m_Bytes.size();
-        Out = Out + One;
-        Out.m_Bytes.resize(sz);
-        Out.m_bNeg = m_bNeg;
+        Out = Out + _1;
+        Out.m_bNeg = !m_bNeg;
 
         return Out;
     }
 
+    // Binary to text based base10 conversion 
     std::string ToDisplay() const
     {
+        const static std::string strNAN = "NAN";
         if (m_bNAN)
-            return "NAN";
+            return strNAN;
 
         if (m_bNeg)
         {
-            Number Disp = TwosComplement();
-            Disp.m_bNeg = false;
-            return "-" + Disp.ToDisplay();
+            Number TC = TwosComplement();
+            return "-" + TC.ToDisplay();
         }
 
-        size_t size = m_Bytes.size();
-        std::string strResult = "0";
+        std::string Num1(1, '1');
+        std::string Num2(1, '0');
+        std::string Disp(1, '0');
 
-        const uint8_t cZero = '0', cOne = '1', cDec = '.';
-        std::string strNum = "1";
-
-        uint8_t iByte = 0;
-        uint8_t iBit = 0;
-
+        UNUM iByte = 0;
+        UNUM pow = 1;
         do
         {
-            uint8_t iProd;
-            std::deque<char> mout;
-            bool bCarry = false;
-            for (std::string::const_reverse_iterator crit2 = strNum.rbegin(); crit2 != strNum.rend(); )
+            UNUM iProd;
+            UNUM iCarry;
+
+            if (m_Bytes[iByte].U & pow) // Evaluates to False=0 or True=one of 1,2,4,8,16,32,64,128
             {
-                uint8_t iMP = *crit2++ - cZero;
-                iProd = 2 * iMP;
-                if (bCarry)
+                Disp.clear();
+                iCarry = 0;
+
+                std::string::const_iterator D1_cend = Num1.end();
+                std::string::const_iterator D2_cend = Num2.end();
+
+                for (std::string::const_iterator D1_crit = Num1.begin(), D2_crit = Num2.begin(); D1_crit != D1_cend || D2_crit != D2_cend;)
                 {
-                    iProd++;
-                    bCarry = false;
-                }
-                if (iProd >= 10)
-                {
-                    iProd -= 10;
-                    bCarry = true;
-                }
-                mout.push_front(cZero + iProd);
-            }
+                    UNUM N1 = (D1_crit != D1_cend ? *D1_crit++ : g_cZero) - g_cZero;
+                    UNUM N2 = (D2_crit != D2_cend ? *D2_crit++ : g_cZero) - g_cZero;
 
-            if (bCarry)
-                mout.push_front(cOne);
-
-            if (m_Bytes[iByte].U & g_pow[iBit++]) // Evaluates to False=0 or True=one of 1,2,4,8,16,32,66,128
-            {
-                const std::string& strS1 = strNum;
-                const std::string& strS2 = strResult;
-
-                uint8_t iSum;
-                std::deque<char> Sum;
-                bool bCarry = false;
-
-                std::string::const_reverse_iterator S1_crend = strS1.rend();
-                std::string::const_reverse_iterator S2_crend = strS2.rend();
-
-                for (std::string::const_reverse_iterator S1_crit = strS1.rbegin(), S2_crit = strS2.rbegin();
-                    S1_crit != S1_crend || S2_crit != S2_crend;)
-                {
-                    uint8_t S1 = S1_crit != S1_crend ? *S1_crit++ : cZero;
-                    uint8_t S2 = S2_crit != S2_crend ? *S2_crit++ : cZero;
-
-                    if (S1 == cDec || S2 == cDec)
-                    {
-                        Sum.push_front(cDec);
-                        continue;
-                    }
-
-                    uint8_t N1 = S1 - cZero;
-                    uint8_t N2 = S2 - cZero;
-
-                    iSum = N1 + N2;
-
-                    if (bCarry)
-                    {
-                        iSum++;
-                        bCarry = false;
-                    }
-
-                    if (iSum >= 10)
-                    {
+                    UNUM iSum = N1 + N2 + iCarry; // adding with carry
+                    iCarry = iSum >= 10;
+                    if (iCarry)
                         iSum -= 10;
-                        bCarry = true;
-                    }
 
-                    Sum.push_front(cZero + iSum);
+                    Disp.push_back(g_cZero + iSum);
                 }
 
-                if (bCarry)
-                    Sum.push_front(cOne);
+                if (iCarry)
+                    Disp.push_back(g_cOne);
 
-                if (*Sum.begin() == cDec)
-                    Sum.push_front(cZero);
-
-                strResult = std::string(Sum.begin(), Sum.end());
+                Num2 = Disp;
             }
-            strNum = std::string(mout.begin(), mout.end());
 
-            if (iBit == 8)
+            iCarry = 0;
+            std::string Prod;
+            for (std::string::const_iterator dit2 = Num1.begin(); dit2 != Num1.end(); )
+            {
+                UNUM N1 = *dit2++ - g_cZero;
+
+                iProd = 2 * N1 + iCarry; // doubling with carry
+                iCarry = iProd >= 10;
+                if (iCarry)
+                    iProd -= 10;
+
+                Prod.push_back(g_cZero + iProd); // double value
+            }
+
+            if (iCarry)
+                Prod.push_back(g_cOne);
+
+            Num1 = Prod;
+
+            if (!(pow <<= 1)) // When doubling overflows to 0
             {
                 iByte++;
-                iBit = 0;
+                pow = 1;
             }
-        } while (iByte != size);
+        } while (iByte != m_Bytes.size());
 
-        return strResult;
+        return std::string(Disp.rbegin(), Disp.rend());
     }
 
     std::string ToBinary() const
     {
-        size_t nBin = m_Bytes.size() * size_t(8);
-        std::string strBin(nBin, '0');
-
-        for (size_t iByte = 0, nBytes = m_Bytes.size(); iByte < nBytes; ++iByte, nBin -= 8)
+        size_t nbit = m_Bytes.size() * size_t(BITWIDTH) - 1;
+        std::string sbin(nbit + 1, '0');
+        UNUM iByte = 0;
+        UNUM pow = 1;
+        do
         {
-            for (size_t iBit = 0; iBit < 8; ++iBit)
+            if (m_Bytes[iByte].U & pow)
+                sbin[nbit] = '1';
+            if (!(pow <<= 1))
             {
-                if (g_pow[iBit] & m_Bytes[iByte].U)
-                    strBin[nBin - iBit - 1] = '1';
+                iByte++;
+                pow = 1;
             }
-        }
-
-        return strBin;
+        } while (--nbit, iByte != m_Bytes.size());
+        return sbin;
     }
 
-    std::string ToPhrase() const;
+    std::string ToPhrase() const
+    {
+        return NumberTranscriber::getInstance().Expand(ToDisplay());
+    }
 
     friend std::ostream& operator << (std::ostream& out, Number& rhs)
     {
@@ -444,69 +795,19 @@ public:
     }
 
 public:
-    Number() : m_bNeg(false), m_bNAN(true) {};
-
-    Number(const char* pstrNumber)
-    {
-        ToBinary(pstrNumber);
-    }
-
-    Number(const std::string& strNumber)
-    {
-        ToBinary(strNumber);
-    }
-
-    Number(const int32_t iNumber)
+    void operator = (const int32_t iNumber)
     {
         Convert(iNumber);
     }
 
-    Number(CByte ch, size_t size)
-    {
-        const static CByte _0(0), _255(255);
-
-        m_bNeg = (ch.U & 128) >> 7 ? true : false;
-        m_Bytes.resize(size, m_bNeg ? _255 : _0);
-        m_Bytes[0] = ch;
-        m_bNAN = false;
-    }
-
-    Number(const CNumber rhs)
-    {
-        ToBinary(rhs.GetNumber());
-    }
-
-    ~Number()
-    {
-    }
-
-    Number& operator = (const Number& rhs)
-    {
-        if (this != &rhs)
-        {
-            m_Bytes = rhs.m_Bytes;
-            m_bNeg = rhs.m_bNeg;
-            m_bNAN = rhs.m_bNAN;
-        }
-        return *this;
-    }
-
-    Number& operator = (const int32_t iNumber)
-    {
-        Convert(iNumber);
-        return *this;
-    }
-
-    Number& operator = (const std::string& strNumber)
+    void operator = (const std::string& strNumber)
     {
         ToBinary(strNumber);
-        return *this;
     }
 
-    Number& operator = (const char* pstrNumber)
+    void operator = (const char* pstrNumber)
     {
         ToBinary(pstrNumber);
-        return *this;
     }
 
     bool operator == (const Number& rhs) const
@@ -539,6 +840,16 @@ public:
         return !(operator < (rhs));
     }
 
+    void operator << (const size_t nbits)
+    {
+        Shl(size_t(-1), nbits);
+    }
+
+    void operator >> (const size_t nbits)
+    {
+        Shr(size_t(-1), nbits);
+    }
+
     Number operator + (const Number& rhs) const
     {
         return Add(rhs);
@@ -551,181 +862,17 @@ public:
 
     Number operator * (const Number& rhs) const
     {
-        if (m_bNAN || rhs.m_bNAN)
-            throw("Invalid number");
-
-        size_t stMB = m_Bytes.size() > rhs.m_Bytes.size() ? m_Bytes.size() : rhs.m_Bytes.size();
-        Number out(CByte(0), stMB);
-        Number lhs = *this;
-        lhs.SetSize(stMB);
-
-        for (size_t iByte = 0, nBytes = rhs.m_Bytes.size(); iByte < nBytes; ++iByte)
-        {
-            for (uint8_t ui = 1; ui != 0; ui <<= 1)
-            {
-                if (ui & rhs.m_Bytes[iByte].U)
-                    out += lhs;
-                lhs.Shl();
-            }
-        }
-
-        return out;
+        return Mul(rhs);
     }
 
     Number operator / (const Number& rhs) const
     {
-        if (m_bNAN || rhs.m_bNAN)
-            throw("Invalid number");
-
-        const static Number _0(CByte(0), 1);
-        Number quot;
-        if (rhs == _0)
-            return quot;
-
-        size_t stMB = m_Bytes.size() > rhs.m_Bytes.size() ? m_Bytes.size() : rhs.m_Bytes.size();
-        Number rem = *this;
-        Number rhsin = rhs;
-        rem.SetSize(stMB);
-        rhsin.SetSize(stMB);
-
-        if (m_bNeg != rhs.m_bNeg)
-        {
-            rhsin = rhsin.TwosComplement();
-            rhsin.m_bNeg = m_bNeg;
-        }
-
-        Number dbl = rhsin;
-        Number pow(m_bNeg == rhs.m_bNeg ? CByte(1) : CByte(-1), stMB);
-        size_t stn = 1;
-
-        if (!m_bNeg)
-        {
-            while (dbl < rem)
-            {
-                dbl.Shl();
-                if (dbl.m_bNeg)
-                    return quot;
-                pow.Shl();
-                ++stn;
-            }
-
-            quot = _0;
-            for (size_t ndbl = stn; ndbl > 0; --ndbl)
-            {
-                if (dbl > rem)
-                {
-                    dbl.Shr();
-                    pow.Shr();
-                    continue;
-                }
-
-                quot += pow;
-                rem -= dbl;
-
-                dbl.Shr();
-                pow.Shr();
-            }
-        }
-        else
-        {
-            while (dbl > rem)
-            {
-                dbl.Shl();
-                if (!dbl.m_bNeg)
-                    return quot;
-                pow.Shl();
-                ++stn;
-            }
-
-            quot = _0;
-            for (size_t ndbl = stn; ndbl > 0; --ndbl)
-            {
-                if (dbl < rem)
-                {
-                    dbl.Shr();
-                    pow.Shr();
-                    continue;
-                }
-
-                quot += pow;
-                rem -= dbl;
-
-                dbl.Shr();
-                pow.Shr();
-            }
-        }
-
-        return quot;
+        return Div(rhs);
     }
 
     Number operator % (const Number& rhs) const
     {
-        if (m_bNAN || rhs.m_bNAN)
-            throw("Invalid number");
-        const static Number _0(CByte(0), 1);
-        Number rem;
-        if (rhs == _0)
-            return rem;
-
-        size_t stMB = m_Bytes.size() > rhs.m_Bytes.size() ? m_Bytes.size() : rhs.m_Bytes.size();
-        rem = *this;
-        Number rhsin = rhs;
-        rem.SetSize(stMB);
-        rhsin.SetSize(stMB);
-
-        if (m_bNeg != rhs.m_bNeg)
-        {
-            rhsin = rhsin.TwosComplement();
-            rhsin.m_bNeg = m_bNeg;
-        }
-
-        Number dbl = rhsin;
-        size_t stn = 1;
-
-        if (!m_bNeg)
-        {
-            while (dbl < rem)
-            {
-                dbl.Shl();
-                if (dbl.m_bNeg)
-                    return Number();
-                ++stn;
-            }
-
-            for (size_t ndbl = stn; ndbl > 0; --ndbl)
-            {
-                if (dbl > rem)
-                {
-                    dbl.Shr();
-                    continue;
-                }
-                rem -= dbl;
-                dbl.Shr();
-            }
-        }
-        else
-        {
-            while (dbl > rem)
-            {
-                dbl.Shl();
-                if (!dbl.m_bNeg)
-                    return Number();
-                ++stn;
-            }
-
-            for (size_t ndbl = stn; ndbl > 0; --ndbl)
-            {
-                if (dbl < rem)
-                {
-                    dbl.Shr();
-                    continue;
-                }
-                rem -= dbl;
-                dbl.Shr();
-            }
-        }
-
-        return rem;
+        return Mod(rhs);
     }
 
     // pre/post increment/decrement
@@ -734,91 +881,88 @@ public:
     The postfix increment/decrement operator (++/--)(int) adds/subs one to its operand and the previous value is the result of the expression
     */
 
-    Number operator ++ ()
+    void operator ++ ()
     {
         const static Number _1(1, 1);
 
         if (m_bNAN)
             throw("Invalid number");
 
-        *this += _1;
-        return *this;
+        *this = this->Add(_1);
     }
 
-    Number operator -- ()
+    void operator -- ()
     {
         const static Number _1(1, 1);
 
         if (m_bNAN)
             throw("Invalid number");
 
-        *this -= 1;
-        return *this;
+        *this = this->Sub(_1);
     }
 
-    Number operator ++ (int)
+    Number operator ++ (int) // By standard, returns the value before arithmetic
     {
         const static Number _1(1, 1);
 
         if (m_bNAN)
             throw("Invalid number");
 
-        Number rhs = *this;
-        *this += _1;
+        Number prev = *this;
+
+        *this = this->Add(_1);
+
+        return prev;
+    }
+
+    Number operator -- (int)  // By standard, returns the value before arithmetic
+    {
+        const static Number _1(1, 1);
+
+        if (m_bNAN)
+            throw("Invalid number");
+
+        Number prev = *this;
+
+        *this = this->Sub(_1);
+
+        return prev;
+    }
+
+    const Number& operator , (const Number& rhs) const
+    {
         return rhs;
     }
 
-    Number operator -- (int)
+    void operator += (const Number& rhs)
     {
-        const static Number _1(1, 1);
-
-        if (m_bNAN)
-            throw("Invalid number");
-
-        Number rhs = *this;
-        *this += _1;
-        return rhs;
+        *this = this->Add(rhs);
     }
 
-    Number operator , (const Number& rhs) const
+    void operator -= (const Number& rhs)
     {
-        return rhs;
+        *this = this->Sub(rhs);
     }
 
-    Number operator += (const Number& rhs)
+    void operator *= (const Number& rhs)
     {
-        *this = *this + rhs;
-        return *this;
+        *this = this->Mul(rhs);
     }
 
-    Number operator -= (const Number& rhs)
+    void operator /= (const Number& rhs)
     {
-        *this = *this - rhs;
-        return *this;
+        *this = this->Div(rhs);
     }
 
-    Number operator *= (const Number& rhs)
+    void operator %= (const Number& rhs)
     {
-        *this = *this * rhs;
-        return *this;
-    }
-
-    Number operator /= (const Number& rhs)
-    {
-        *this = *this / rhs;
-        return *this;
-    }
-
-    Number operator %= (const Number& rhs)
-    {
-        *this = *this % rhs;
-        return *this;
+        *this = this->Mod(rhs);
     }
 
     void SetSize(size_t size)
     {
         if (size != m_Bytes.size())
-            m_Bytes.resize(size, m_bNeg ? 255 : 0);
+            m_Bytes.resize(size, m_bNeg ? NTH : 0);
     }
 
     size_t GetSize() const
@@ -828,162 +972,134 @@ public:
 
 protected:
 
-    void ToBinary(const std::string strNumber)
+    // Find the low and high bits
+    size_t MSb() const
     {
-        if (strNumber.empty())
-            throw("Invalid number");
-        
-        if (strNumber[0] == '-')
+        size_t lhp(size_t(-1));
+        size_t lhn(size_t(-1));
+
+        size_t bit = m_Bytes.size() * BITWIDTH - 1;
+        size_t iByte = m_Bytes.size() - 1;
+        UNUM pow = AND;
+        do
         {
-            if (strNumber.length() < 2)
-                throw("Invalid number");
-            m_bNeg = true;
-        }
-        else
-            m_bNeg = false;
-
-        std::string strInput = strNumber.substr(m_bNeg ? 1 : 0);
-        if (strInput.empty())
-            throw("Invalid number");
-
-        m_bNAN = false;
-
-        std::string strOut;
-        uint8_t idnm = 0;
-        std::deque<char> binary;
-
-        uint8_t bVal = 0;
-        uint8_t bPos = 0;
-        uint8_t bSiz = 0;
-        std::vector<uint8_t> vbytes;
-
-        std::string::const_iterator cit = strInput.begin();
-        for (;;)
-        {
-            // Compute the denominator of the division
-            idnm = idnm * 10 + *cit - '0';
-            if (idnm < 2 && cit + 1 != strInput.end())
+            if (!m_bNeg && (m_Bytes[iByte].U & pow))
             {
-                // Carry a 0
-                if (!strOut.empty())
-                    strOut += '0';
-
-                // The denominator has to be greater than 2 now
-                idnm = idnm * 10 + (*(cit + 1) - '0');
-
-                // Move to the next character
-                cit += 2;
-            }
-            else
-            {
-                // Check for completion the conversion
-                if (strInput.length() == 1 && idnm < 2)
+                if (lhp == size_t(-1))
                 {
-                    /////////////////////////////////////
-                    // Binary stream 0s and 1s
-
-                    binary.push_front('0' + idnm);
-
-                    /////////////////////////////////////
-                    // Byte stream 0-255
-
-                    bSiz++;
-                    if (idnm)
-                        bVal += g_pow[bPos];
-                    bPos++;
-                    if (bPos > 7)
-                    {
-                        vbytes.push_back(bVal);
-                        bVal = 0;
-                        bPos = 0;
-                    }
-
-                    /////////////////////////////////////
-
+                    lhp = bit;
                     break;
                 }
-
-                // Move to the next character
-                cit++;
             }
-
-            // Append the digit to the output that becomes the new input from integer division by 2
-            strOut += '0' + idnm / 2;
-            idnm = idnm % 2;
-
-            // Has the input been processed
-            if (cit == strInput.end())
+            else if (m_bNeg && (~m_Bytes[iByte].U & pow))
             {
-                // Add the remainder of 0 or 1 to the binary string
-                binary.push_front('0' + idnm);
-
-                /////////////////////////////////////
-
-                bSiz++;
-                if (idnm)
-                    bVal += g_pow[bPos];
-                bPos++;
-                if (bPos > 7)
+                if (lhn == size_t(-1))
                 {
-                    vbytes.push_back(bVal);
-                    bVal = 0;
-                    bPos = 0;
+                    lhn = bit + 1;
+                    break;
                 }
-
-                /////////////////////////////////////
-
-                // Reset and restart (but not the incremental bytes, they carry over)
-                strInput = strOut;
-                strOut.clear();
-                idnm = 0;
-                cit = strInput.begin();
             }
-        }
-        if (bVal)
-            vbytes.push_back(bVal);
 
-        size_t size = uint8_t(vbytes.size());
-        if (size)
+            if (!(pow >>= 1))
+            {
+                iByte--;
+                pow = AND;
+            }
+        } while (--bit, iByte != -1);
+
+        return !m_bNeg ? lhp : lhn;
+    }
+
+    // Left Bit Shift by n bits <- double value n times
+    void Shl(size_t stbit = size_t(-1), size_t nbits = 1)
+    {
+        size_t stn = 0;
+        size_t iByte = m_Bytes.size() - 1;
+        if (stbit != size_t(-1))
         {
-            m_Bytes.resize(size);
-            for (size_t iByte = 0; iByte < size; ++iByte)
-                m_Bytes[iByte].U = vbytes[iByte];
-        }
-        else
-        {
-            m_Bytes.resize(1);
-            m_Bytes[0].U = 0;
+            iByte = (stbit >> SHFM) + 1;
+            if (iByte >= m_Bytes.size())
+                iByte = m_Bytes.size() - 1;
+            if (iByte)
+                stn = iByte - 1;
         }
 
+        if (nbits >= BITWIDTH)
+        {
+            size_t tmp = iByte;
+            size_t sb = nbits / BITWIDTH;
+            if (sb)
+            {
+                for (; iByte != -1; --iByte)
+                {
+                    if (iByte >= sb)
+                    {
+                        m_Bytes[iByte].U = m_Bytes[iByte - sb].U;
+                        m_Bytes[iByte - sb].U = 0;
+                    }
+                }
+                nbits = nbits % BITWIDTH;
+            }
+            iByte = tmp;
+        }
+
+        for (; iByte != stn; --iByte)
+        {
+            m_Bytes[iByte].U <<= nbits;
+            m_Bytes[iByte].U |= (m_Bytes[iByte - 1].U >> (BITWIDTH - nbits));
+        }
+        m_Bytes[iByte].U <<= nbits;
+
+        m_bNeg = (m_Bytes[m_Bytes.size() - 1].U & AND) >> SHFT ? true : false;
+    }
+
+    // Right Bit Shift by n bits -> halve value n times
+    void Shr(size_t stbit = size_t(-1), size_t nbits = 1)
+    {
+        size_t stn = m_Bytes.size() - 1;
+        size_t iByte = 0;
+        if (stbit != size_t(-1))
+        {
+            stn = stbit >> SHFM;
+            if (stn >= m_Bytes.size())
+                stn = m_Bytes.size() - 1;
+            iByte = stn;
+            if (iByte)
+                --iByte;
+        }
+
+        if (nbits >= BITWIDTH)
+        {
+            size_t tmp = iByte;
+            size_t sb = nbits / BITWIDTH;
+            if (sb)
+            {
+                for (; iByte != m_Bytes.size() - 1; ++iByte)
+                {
+                    if (iByte + sb < m_Bytes.size())
+                    {
+                        m_Bytes[iByte].U = m_Bytes[iByte + sb].U;
+                        m_Bytes[iByte + sb].U = 0;
+                    }
+                }
+                nbits = nbits % BITWIDTH;
+            }
+            iByte = tmp;
+        }
+
+        for (; iByte != stn; ++iByte)
+        {
+            m_Bytes[iByte].U >>= nbits;
+            m_Bytes[iByte].U |= (m_Bytes[iByte + 1].U << (BITWIDTH - nbits));
+        }
+
+        m_Bytes[iByte].U >>= nbits;
         if (m_bNeg)
-            *this = TwosComplement();
-
-        SetSize(max(GetSize(), size_t(4)));
+            m_Bytes[iByte].U |= AND;
     }
-    
-    protected:
-        std::vector<CByte> m_Bytes;
-        bool m_bNeg;
-        bool m_bNAN;
-};
 
-struct CILT
-{
-    struct Compare
-    {
-        bool operator() (const unsigned char& c1, const unsigned char& c2) const
-        {
-            return tolower(c1) < tolower(c2);
-        }
-    };
-
-    bool operator() (const std::string& strLhs, const std::string& strRhs) const
-    {
-        return std::lexicographical_compare
-        (
-            strLhs.begin(), strLhs.end(),
-            strRhs.begin(), strRhs.end(),
-            Compare()
-        );
-    }
+protected:
+    std::vector<DATA> m_Bytes;
+    bool m_bNeg;
+    bool m_bNAN;
 };

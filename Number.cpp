@@ -3,147 +3,68 @@
 #include "Constants.h"
 #include <sstream>
 #include <map>
+
 #pragma warning(disable:6385)
 
-static std::map<std::string, std::string, CILT> g_mapWordTo99;
-static std::map<std::string, std::string, CILT> g_mapWordTo100;
-static const std::string g_one("1");
+std::unique_ptr<NumberTranscriber> NumberTranscriber::instance = nullptr;
+std::mutex NumberTranscriber::mutex;
+std::map<std::string, std::string, CILT> NumberTranscriber::mapWordTo99;
+std::map<std::string, std::string, CILT> NumberTranscriber::mapWordTo100;
 
-std::string Number::ToPhrase() const
+NumberTranscriber& NumberTranscriber::getInstance()
 {
-	static bool bInit = false;
-	if (!bInit)
+	if (instance == nullptr)
 	{
-		bInit = true;
-		CNumber::Init();
+		std::lock_guard<std::mutex> lock(mutex);
+		if (instance == nullptr)
+			instance.reset(new NumberTranscriber());
+	}
+	return *instance;
+}
+
+void NumberTranscriber::init()
+{
+	for (int iOne = 0; iOne < g_nOnes; ++iOne)
+		mapWordTo99[g_ones[iOne]] = g_nones[iOne];
+
+	for (int iTen = 2; iTen < g_nTens; ++iTen)
+		mapWordTo99[g_tens[iTen]] = g_ntens[iTen];
+
+	for (int iTen = 2, iTens; iTen < g_nTens - 1; ++iTen)
+	{
+		iTens = iTen * 10;
+		std::string strTen = g_tens[iTen] + "-";
+		for (int iOne = 1; iOne < 10; ++iOne)
+			mapWordTo99[std::string(strTen + g_ones[iOne])] = std::string(std::to_string(iTens + iOne));
 	}
 
-	CNumber N(ToDisplay());
-	return N.GetPhrase();
+	for (int iHun = 0, nZero = 3; iHun < g_nHuns; iHun++, nZero += 3)
+		mapWordTo100[g_huns[iHun]] = ("1" + std::string(nZero, g_cZero));
 }
 
-CNumber::CNumber() : m_bNegative(false)
-{
-	m_strNumber.clear();
-	m_strPhrase.clear();
-}
-
-CNumber::CNumber(const std::string& strInput, bool bNum)
-{
-	SetNumber(bNum ? strInput : Contract(strInput));
-}
-
-void CNumber::SetNumber(const std::string& strInput)
-{
-	bool bZero = true;
-	if (!strInput.empty())
-	{
-		m_bNegative = false;
-		bool bDigit = false;
-		bool bDec = false;
-		std::deque<char> dqInput;
-		std::string::const_iterator cit;
-		for (cit = strInput.begin(); cit != strInput.end(); ++cit)
-		{
-			if (*cit == ' ')
-				continue;
-			break;
-		}
-		for (; cit != strInput.end(); ++cit)
-		{
-			if (!m_bNegative && *cit == '-')
-			{
-				if (bDigit || bDec || m_bNegative)
-					throw(std::exception("Invalid Number"));
-				dqInput.push_front('-');
-				m_bNegative = true;
-				continue;
-			}
-
-			if (*cit == g_cDecSep)
-			{
-				if (bDec)
-					throw(std::exception("Invalid Number"));
-				bDec = true;
-				if (dqInput.size() == 0)
-					dqInput.push_back(g_cZero);
-				dqInput.push_back(g_cDecSep);
-				continue;
-			}
-
-			if (isdigit(*cit))
-			{
-				if (*cit == g_cZero)
-				{
-					if (dqInput.size() == 0)
-						continue;
-					if (m_bNegative && dqInput.size() == 1)
-						continue;
-				}
-
-				if (bZero && *cit != g_cZero)
-					bZero = false;
-				dqInput.push_back(*cit);
-				bDigit = true;
-				continue;
-			}
-			
-			if (!isdigit(*cit))
-			{
-				std::string strResult = Contract(strInput);
-				if (strResult.length() > 0)
-					SetNumber(strResult); // Sometimes recursion is good
-				return;
-			}
-		}
-
-		while (bDec && dqInput.size() > 0 && *(dqInput.end() - 1) == g_cZero)
-			dqInput.pop_back();
-		if (dqInput.size() > 0 && *(dqInput.end() - 1) == g_cDecSep)
-			dqInput.pop_back();
-		if (dqInput.size() > 0)
-			m_strNumber = std::string(dqInput.begin(), dqInput.end());
-		else
-			m_strNumber = "0";
-
-		Convert();
-	}
-	else
-	{
-		m_strNumber.clear();
-		m_strPhrase.clear();
-		m_bNegative = false;
-	}
-}
-
-std::string CNumber::WB()
-{
-	return g_huns[g_nHuns - 1];
-}
-
-std::string CNumber::Expand(const std::string& strInput)
+std::string NumberTranscriber::Expand(const std::string& number)
 {
 	std::string strResult;
-	if (strInput.empty())
+	if (number.empty())
 		return strResult;
 
 	int iResult = 0;
-	m_bNegative = false;
+	bool bNegative = false;
 	int digs, nd, nh;
 
 	std::string strLhs;
-	size_t stP1 = strInput.find(g_cDecSep);
+	size_t stP1 = number.find(g_cDecSep);
 	if (stP1 == std::string::npos)
-		strLhs = strInput;
+		strLhs = number;
 	else
-		strLhs = strInput.substr(0, stP1);
+		strLhs = number.substr(0, stP1);
 	if (strLhs.empty())
 		strLhs = g_cZero;
 
 	strResult.clear();
 	if (*(strLhs.begin()) == '-')
 	{
-		m_bNegative = true;
+		bNegative = true;
 		strLhs = strLhs.substr(1);
 	}
 
@@ -222,13 +143,13 @@ start:
 	else
 		iResult = -2;
 
-	if (m_bNegative && iResult == 0)
+	if (bNegative && iResult == 0)
 		strResult = "Negative " + strResult;
 
 	if (iResult == 0 && stP1 != std::string::npos)
 	{
 		strResult += " Point";
-		for (std::string::const_iterator cit = strInput.begin() + stP1 + 1; iResult == 0 && cit != strInput.end(); ++cit)
+		for (std::string::const_iterator cit = number.begin() + stP1 + 1; iResult == 0 && cit != number.end(); ++cit)
 		{
 			try
 			{
@@ -241,22 +162,37 @@ start:
 			}
 		}
 	}
+
 	return strResult;
 }
 
-std::string CNumber::Contract(const std::string& strInput) // Description
+std::string NumberTranscriber::Contract(const std::string& phrase)
 {
 	std::string strResult;
-	if (strInput.empty())
+	if (phrase.empty())
 		return strResult;
-	
+
 	int iResult = 0;
-	m_bNegative = false;
+	bool bNegative = false;
 	bool bPoint = false;
 
 	// Build the token list
 	std::vector<std::string> vstrTokens;
-	Split(strInput, vstrTokens);
+
+	std::string strToken;
+	size_t istart = 0, ipos;
+	do
+	{
+		ipos = phrase.find(' ', istart);
+		if (ipos == std::string::npos)
+			vstrTokens.push_back(phrase.substr(istart));
+		else
+		{
+			strToken = phrase.substr(istart, ipos - istart);
+			vstrTokens.push_back(strToken);
+			istart = ipos + 1;
+		}
+	} while (ipos != std::string::npos);
 
 	// Build the number groups
 	bool bFound = false;
@@ -267,16 +203,16 @@ std::string CNumber::Contract(const std::string& strInput) // Description
 	for (it = vstrTokens.begin(); !bPoint && it != vstrTokens.end(); ++it)
 	{
 		bFound = false;
-		mit = g_mapWordTo99.find(*it);
-		if (mit != g_mapWordTo99.end())
+		mit = mapWordTo99.find(*it);
+		if (mit != mapWordTo99.end())
 		{
 			vstrNumbers.push_back(mit->second);
 			bFound = true;
 		}
 		else
 		{
-			mit = g_mapWordTo100.find(*it);
-			if (mit != g_mapWordTo100.end())
+			mit = mapWordTo100.find(*it);
+			if (mit != mapWordTo100.end())
 			{
 				vstrNumbers.push_back(mit->second);
 				vvstrNumbers.push_back(vstrNumbers);
@@ -288,10 +224,10 @@ std::string CNumber::Contract(const std::string& strInput) // Description
 		if (!bFound)
 		{
 			if (TextEqual(*it, "Negative"))
-				m_bNegative = true;
+				bNegative = true;
 			else if (TextEqual(*it, "Point"))
 				bPoint = true;
-			if (!m_bNegative && !bPoint)
+			if (!bNegative && !bPoint)
 			{
 				iResult = -1;
 				break;
@@ -325,7 +261,7 @@ std::string CNumber::Contract(const std::string& strInput) // Description
 			strResult = strGroupNumber;
 	}
 
-	if (m_bNegative)
+	if (bNegative)
 		strResult = "-" + strResult;
 
 	if (bPoint)
@@ -333,8 +269,8 @@ std::string CNumber::Contract(const std::string& strInput) // Description
 		strResult += ".";
 		for (; iResult == 0 && it != vstrTokens.end(); ++it)
 		{
-			mit = g_mapWordTo99.find(*it);
-			if (mit != g_mapWordTo99.end())
+			mit = mapWordTo99.find(*it);
+			if (mit != mapWordTo99.end())
 				strResult += mit->second;
 			else
 				iResult = -1;
@@ -344,102 +280,18 @@ std::string CNumber::Contract(const std::string& strInput) // Description
 	return strResult;
 }
 
-void CNumber::Convert()
-{
-	m_strPhrase = Expand(m_strNumber);
-	if (m_strPhrase.empty())
-		throw(std::exception("Invalid Number"));
-}
-
-void CNumber::Split(const std::string& strInput, std::vector<std::string>& vstrTokens, const char cFind)
-{
-	vstrTokens.clear();
-	if (strInput.empty())
-		return;
-
-	std::string strToken;
-	size_t istart = 0, ipos;
-	do
-	{
-		ipos = strInput.find(cFind, istart);
-		if (ipos == std::string::npos)
-			vstrTokens.push_back(strInput.substr(istart));
-		else
-		{
-			strToken = strInput.substr(istart, ipos - istart);
-			vstrTokens.push_back(strToken);
-			istart = ipos + 1;
-		}
-	} while (ipos != std::string::npos);
-}
-
-const std::string& CNumber::GetNumber() const
-{
-	return m_strNumber;
-}
-
-const std::string& CNumber::GetPhrase() const
-{
-	return m_strPhrase;
-}
-
-bool CNumber::TextEqual(const std::string& strLHS, const std::string& strRHS)
+bool NumberTranscriber::TextEqual(const std::string& s1, const std::string& s2)
 {
 	bool bEqual = true;
-	if (strLHS.length() != strRHS.length())
+	if (s1.length() != s1.length())
 		bEqual = false;
 	else
 	{
-		for (size_t stIdx = 0; bEqual && stIdx < strLHS.length(); ++stIdx)
+		for (size_t stIdx = 0; bEqual && stIdx < s1.length(); ++stIdx)
 		{
-			if (tolower(*(strLHS.begin() + stIdx)) !=
-				tolower(*(strRHS.begin() + stIdx)))
+			if (tolower(*(s1.begin() + stIdx)) != tolower(*(s2.begin() + stIdx)))
 				bEqual = false;
 		}
 	}
 	return bEqual;
-}
-
-void CNumber::Init()
-{
-	std::string strTen, strWord, strNum, strHun;
-	for (int iOne = 0; iOne < g_nOnes; ++iOne)
-		g_mapWordTo99[g_ones[iOne]] = g_nones[iOne];
-
-	for (int iTen = 2; iTen < g_nTens; ++iTen)
-		g_mapWordTo99[g_tens[iTen]] = g_ntens[iTen];
-
-	for (int iTen = 2, iTens; iTen < g_nTens - 1; ++iTen)
-	{
-		iTens = iTen * 10;
-		strTen = g_tens[iTen] + "-";
-		for (int iOne = 1; iOne < 10; ++iOne)
-		{
-			strWord = strTen + g_ones[iOne];
-			strNum = std::to_string(iTens + iOne);
-			g_mapWordTo99[strWord] = strNum;
-		}
-	}
-
-	for (int iHun = 0, nZero = 3; iHun < g_nHuns; iHun++, nZero += 3)
-	{
-		strHun = g_one + std::string(nZero, g_cZero);
-		g_mapWordTo100[g_huns[iHun]] = strHun;
-	}
-}
-
-std::ostream& operator<<(std::ostream& out, const CNumber& Number)
-{
-	out << Number.m_strNumber;
-	return out;
-}
-
-// error C2338 : static_assert failed : 'Test writer must define specialization of ToString<const Q& q> 
-// for your class class std::basic_string<wchar_t,struct std::char_traits<wchar_t>,class std::allocator<wchar_t> > 
-// __cdecl Microsoft::VisualStudio::CppUnitTestFramework::ToString<class CNumber>(const class CNumber &).
-std::wstring CNumber::ToString(const CNumber& rhs)
-{
-	std::wstringstream wstrStream;
-	wstrStream << rhs.m_strNumber.c_str();
-	return wstrStream.str();
 }

@@ -22,6 +22,7 @@
 #include "FractalView.h"
 
 #include "FractalDocManager.h"
+#include "Number.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -75,6 +76,9 @@ const WORD _wVerMinor = 0;
 // CFractalApp initialization
 BOOL CFractalApp::InitInstance()
 {
+	// Initialize the large number library
+	NumberTranscriber& NumberX = NumberTranscriber::getInstance();
+
 	// InitCommonControlsEx() is required on Windows XP if an application
 	// manifest specifies use of ComCtl32.dll version 6 or later to enable
 	// visual styles.  Otherwise, any window creation will fail.

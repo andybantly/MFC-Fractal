@@ -18,6 +18,7 @@
 #include "intrin.h"
 #include <algorithm>
 #include <map>
+#include "Number.h"
 
 CFractalBase::CFractalBase(CFractalParm FractalParm) : m_FractalParm(FractalParm)
 {
@@ -82,6 +83,9 @@ CDriveMultiThreadedFractal::~CDriveMultiThreadedFractal()
 
 BOOL CDriveMultiThreadedFractal::InitInstance()
 {
+	// Initialize the large number library
+	NumberTranscriber& NumberX = NumberTranscriber::getInstance();
+
 	return TRUE;
 }
 

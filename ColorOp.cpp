@@ -14,6 +14,7 @@
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #include "stdafx.h"
 #include "ColorOp.h"
+#include "Number.h"
 
 // Function operator
 void CColorOp::operator() (int iRowBeg,int iRowEnd)
@@ -266,6 +267,9 @@ CDriveMultiThreadedColor::~CDriveMultiThreadedColor()
 
 BOOL CDriveMultiThreadedColor::InitInstance()
 {
+	// Initialize the large number library
+	NumberTranscriber& NumberX = NumberTranscriber::getInstance();
+
 	return TRUE;
 }
 
