@@ -29,56 +29,47 @@
 
 typedef uint32_t UNUM;  // The internal type is a 'unsigned number'
 
-struct CILT
-{
-    struct Compare { bool operator() (const unsigned char& cl, const unsigned char& cr) const { return tolower(cl) < tolower(cr); } };
-    bool operator() (const std::string& sl, const std::string& sr) const { return std::lexicographical_compare(sl.begin(), sl.end(), sr.begin(), sr.end(), Compare()); }
-};
 
 // Global singleton for number transcribing
 class NumberTranscriber
 {
+    struct cilt  // case insensitive less-than for mixed case map text
+    {
+        struct compare { bool operator() (const unsigned char& cl, const unsigned char& cr) const { return tolower(cl) < tolower(cr); } };
+        bool operator() (const std::string& sl, const std::string& sr) const { return std::lexicographical_compare(sl.begin(), sl.end(), sr.begin(), sr.end(), compare()); }
+    };
+
     NumberTranscriber() { init(); }
     NumberTranscriber(const NumberTranscriber&) = delete;
     NumberTranscriber& operator=(const NumberTranscriber&) = delete;
 
     static std::unique_ptr<NumberTranscriber> instance;
     static std::mutex mutex;
-    static std::map<std::string, std::string, CILT> mapWordTo99;
-    static std::map<std::string, std::string, CILT> mapWordTo100;
+    static std::map<std::string, std::string, NumberTranscriber::cilt> mapWordTo99;
+    static std::map<std::string, std::string, NumberTranscriber::cilt> mapWordTo100;
     static void init();
 
 public:
     static NumberTranscriber& getInstance();
-    static std::string Expand(const std::string& number);
-    static std::string Contract(const std::string& phrase);
+    static std::string ToPhrase(const std::string& number);
+    static std::string ToNumber(const std::string& phrase);
     static bool TextEqual(const std::string& s1, const std::string& s2);
 };
 
 class Number
 {
 protected:
-    class DATA
+    struct DATA
     {
-    public:
-        DATA(UNUM n = 0) : U(n), OF(0) {};
+        alignas(8) UNUM U;
+        UNUM OF;
 
-        DATA(const DATA& data) { *this = data; }
+        DATA(UNUM u = 0) : U(u), OF(0) {};
 
-        DATA& operator = (const DATA& data)
-        {
-            if (this != &data)
-            {
-                U = data.U;
-                OF = data.OF;
-            }
-            return *this;
-        }
-
-        DATA operator + (const DATA& data) const // Full-Adder
+        const DATA Add(const DATA& data, const UNUM of) const // Full-Adder
         {
             DATA Out;
-            Out.OF = OF; // Kerry-In
+            Out.OF = of; // Kerry-In
             for (UNUM ui = 1, uj = 0; ui != 0; ui <<= 1, ++uj)
             {
                 Out.U |= (Out.OF ^ (((U & ui) >> uj) ^ ((data.U & ui) >> uj))) << uj;                                                  // SUM:   Kerry-in XOR (A XOR B)
@@ -87,10 +78,10 @@ protected:
             return Out;
         }
 
-        DATA operator - (const DATA& data) const // Full-Subtractor
+        const DATA Sub(const DATA& data, const UNUM of) const // Full-Subtractor
         {
             DATA Out;
-            Out.OF = OF; // Borrow-In
+            Out.OF = of; // Borrow-In
             for (UNUM ui = 1, uj = 0; ui != 0; ui <<= 1, ++uj)
             {
                 Out.U |= (Out.OF ^ (((U & ui) >> uj) ^ ((data.U & ui) >> uj))) << uj;                                                   // DIFFERENCE: (A XOR B) XOR Borrow-in
@@ -99,13 +90,7 @@ protected:
             return Out;
         }
 
-        bool ispow2(const UNUM n) const
-        {
-            return (n > 0) && (n & (n - 1)) == 0;
-        }
-
-        UNUM U;
-        UNUM OF;
+        const bool ispow2() const { return (U > 0) && (U & (U - 1)) == 0; }
     };
 
 public:
@@ -148,9 +133,9 @@ protected:
     void ToBinary(const std::string& strNumberIn)
     {
         if (strNumberIn.empty())
-            throw("Invalid number");
+            throw std::exception();
 
-        std::string strNumber = NumberTranscriber::getInstance().Contract(strNumberIn);
+        std::string strNumber = NumberTranscriber::getInstance().ToNumber(strNumberIn);
         if (strNumber.empty())
             strNumber = strNumberIn;
 
@@ -161,13 +146,13 @@ protected:
         if (strNumber[0] == '-')
         {
             if (strNumber.length() < 2)
-                throw("Invalid number");
+                throw std::exception();
             bNeg = true;
         }
 
         std::string strInput = strNumber.substr(bNeg ? 1 : 0);
         if (strInput.empty())
-            throw("Invalid number");
+            throw std::exception();
 
         std::string strOut;
         UNUM idnm = 0;
@@ -314,7 +299,7 @@ public:
     Number Add(const Number& rhs, size_t st = 0) const
     {
         if (m_bNAN || rhs.m_bNAN)
-            throw("Invalid number");
+            throw std::exception();
 
         size_t l = m_Bytes.size(), r = rhs.m_Bytes.size();
         size_t stMin = l == r ? l : (l < r ? l : r);
@@ -323,21 +308,18 @@ public:
         Number out(Zero, stMax);
         UNUM of = 0;
 
-        DATA lb, rb;
         for (; st < stMin; ++st)
         {
-            lb = m_Bytes[st];
-            rb = rhs.m_Bytes[st];
-            if (of == 0 && lb.U == 0 && rb.U == 0) continue;
-            of = (lb.OF = of, out.m_Bytes[st] = lb + rb, out.m_Bytes[st].OF);
+            if (of == 0 && m_Bytes[st].U == 0 && rhs.m_Bytes[st].U == 0) continue;
+            of = (out.m_Bytes[st] = m_Bytes[st].Add(rhs.m_Bytes[st], of), out.m_Bytes[st].OF);
         }
 
-        for (; st < stMax; ++st)
+        for (DATA lb, rb; st < stMax; ++st)
         {
             lb = st < l ? m_Bytes[st] : (m_bNeg ? Neg1 : Zero);
             rb = st < r ? rhs.m_Bytes[st] : (rhs.m_bNeg ? Neg1 : Zero);
             if (of == 0 && lb.U == 0 && rb.U == 0) continue;
-            of = (lb.OF = of, out.m_Bytes[st] = lb + rb, out.m_Bytes[st].OF);
+            of = (out.m_Bytes[st] = lb.Add(rb, of), out.m_Bytes[st].OF);
         }
 
         out.m_bNeg = (out.m_Bytes[out.GetSize() - 1].U & AND) >> SHFT ? true : false; // Shift nbits - 1  to match size of data
@@ -348,7 +330,7 @@ public:
     Number Sub(const Number& rhs, size_t st = 0) const
     {
         if (m_bNAN || rhs.m_bNAN)
-            throw("Invalid number");
+            throw std::exception();
 
         size_t l = m_Bytes.size(), r = rhs.m_Bytes.size();
         size_t stMin = l == r ? l : (l < r ? l : r);
@@ -357,21 +339,18 @@ public:
         Number out(Zero, stMax);
         UNUM of = 0;
 
-        DATA lb, rb;
         for (; st < stMin; ++st)
         {
-            lb = m_Bytes[st];
-            rb = rhs.m_Bytes[st];
-            if (of == 0 && lb.U == 0 && rb.U == 0) continue;
-            of = (lb.OF = of, out.m_Bytes[st] = lb - rb, out.m_Bytes[st].OF);
+            if (of == 0 && m_Bytes[st].U == 0 && rhs.m_Bytes[st].U == 0) continue;
+            of = (out.m_Bytes[st] = m_Bytes[st].Sub(rhs.m_Bytes[st], of), out.m_Bytes[st].OF);
         }
 
-        for (; st < stMax; ++st)
+        for (DATA lb, rb; st < stMax; ++st)
         {
             lb = st < l ? m_Bytes[st] : (m_bNeg ? Neg1 : Zero);
             rb = st < r ? rhs.m_Bytes[st] : (rhs.m_bNeg ? Neg1 : Zero);
             if (of == 0 && lb.U == 0 && rb.U == 0) continue;
-            of = (lb.OF = of, out.m_Bytes[st] = lb - rb, out.m_Bytes[st].OF);
+            of = (out.m_Bytes[st] = lb.Sub(rb, of), out.m_Bytes[st].OF);
         }
 
         out.m_bNeg = (out.m_Bytes[out.GetSize() - 1].U & AND) >> SHFT ? true : false;
@@ -382,7 +361,7 @@ public:
     Number Mul(const Number& rhs) const
     {
         if (m_bNAN || rhs.m_bNAN)
-            throw("Invalid number");
+            throw std::exception();
 
         bool bND = m_Bytes.size() >= rhs.m_Bytes.size();
 
@@ -422,7 +401,7 @@ public:
     Number Div(const Number& rhs) const
     {
         if (m_bNAN || rhs.m_bNAN)
-            throw("Invalid number");
+            throw std::exception();
 
         const static Number _0(DATA(0), 1);
         Number quot;
@@ -517,7 +496,7 @@ public:
     Number Mod(const Number& rhs) const
     {
         if (m_bNAN || rhs.m_bNAN)
-            throw("Invalid number");
+            throw std::exception();
 
         const static Number _0(DATA(0), 1);
         Number quot;
@@ -665,7 +644,7 @@ public:
     Number TwosComplement() const
     {
         if (m_bNAN)
-            throw("Invalid number");
+            throw std::exception();
 
         size_t size = m_Bytes.size();
         Number Out(DATA(0), size);
@@ -785,7 +764,7 @@ public:
 
     std::string ToPhrase() const
     {
-        return NumberTranscriber::getInstance().Expand(ToDisplay());
+        return NumberTranscriber::getInstance().ToPhrase(ToDisplay());
     }
 
     friend std::ostream& operator << (std::ostream& out, Number& rhs)
@@ -840,14 +819,16 @@ public:
         return !(operator < (rhs));
     }
 
-    void operator << (const size_t nbits)
+    Number& operator << (const size_t nbits)
     {
         Shl(size_t(-1), nbits);
+        return *this;
     }
 
-    void operator >> (const size_t nbits)
+    Number& operator >> (const size_t nbits)
     {
         Shr(size_t(-1), nbits);
+        return *this;
     }
 
     Number operator + (const Number& rhs) const
@@ -881,32 +862,34 @@ public:
     The postfix increment/decrement operator (++/--)(int) adds/subs one to its operand and the previous value is the result of the expression
     */
 
-    void operator ++ ()
+    Number& operator ++ ()
     {
         const static Number _1(1, 1);
 
         if (m_bNAN)
-            throw("Invalid number");
+            throw std::exception();
 
         *this = this->Add(_1);
+        return *this;
     }
 
-    void operator -- ()
+    Number& operator -- ()
     {
         const static Number _1(1, 1);
 
         if (m_bNAN)
-            throw("Invalid number");
+            throw std::exception();
 
         *this = this->Sub(_1);
+        return *this;
     }
 
-    Number operator ++ (int) // By standard, returns the value before arithmetic
+    const Number operator ++ (int) // By standard, returns the value before arithmetic
     {
         const static Number _1(1, 1);
 
         if (m_bNAN)
-            throw("Invalid number");
+            throw std::exception();
 
         Number prev = *this;
 
@@ -915,12 +898,12 @@ public:
         return prev;
     }
 
-    Number operator -- (int)  // By standard, returns the value before arithmetic
+    const Number operator -- (int)  // By standard, returns the value before arithmetic
     {
         const static Number _1(1, 1);
 
         if (m_bNAN)
-            throw("Invalid number");
+            throw std::exception();
 
         Number prev = *this;
 
@@ -929,36 +912,55 @@ public:
         return prev;
     }
 
+    //
+    // Comma Operators
+    //
     const Number& operator , (const Number& rhs) const
     {
         return rhs;
     }
 
-    void operator += (const Number& rhs)
+    Number& operator , (Number& rhs)
+    {
+        return rhs;
+    }
+
+    //
+    // Arithmetic operators
+    //
+    Number& operator += (const Number& rhs)
     {
         *this = this->Add(rhs);
+        return *this;
     }
 
-    void operator -= (const Number& rhs)
+    Number& operator -= (const Number& rhs)
     {
         *this = this->Sub(rhs);
+        return *this;
     }
 
-    void operator *= (const Number& rhs)
+    Number& operator *= (const Number& rhs)
     {
         *this = this->Mul(rhs);
+        return *this;
     }
 
-    void operator /= (const Number& rhs)
+    Number& operator /= (const Number& rhs)
     {
         *this = this->Div(rhs);
+        return *this;
     }
 
-    void operator %= (const Number& rhs)
+    Number& operator %= (const Number& rhs)
     {
         *this = this->Mod(rhs);
+        return *this;
     }
 
+    //
+    // Helpers
+    //
     void SetSize(size_t size)
     {
         if (size != m_Bytes.size())

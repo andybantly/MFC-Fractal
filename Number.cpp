@@ -8,8 +8,8 @@
 
 std::unique_ptr<NumberTranscriber> NumberTranscriber::instance = nullptr;
 std::mutex NumberTranscriber::mutex;
-std::map<std::string, std::string, CILT> NumberTranscriber::mapWordTo99;
-std::map<std::string, std::string, CILT> NumberTranscriber::mapWordTo100;
+std::map<std::string, std::string, NumberTranscriber::cilt> NumberTranscriber::mapWordTo99;
+std::map<std::string, std::string, NumberTranscriber::cilt> NumberTranscriber::mapWordTo100;
 
 NumberTranscriber& NumberTranscriber::getInstance()
 {
@@ -42,7 +42,7 @@ void NumberTranscriber::init()
 		mapWordTo100[g_huns[iHun]] = ("1" + std::string(nZero, g_cZero));
 }
 
-std::string NumberTranscriber::Expand(const std::string& number)
+std::string NumberTranscriber::ToPhrase(const std::string& number)
 {
 	std::string strResult;
 	if (number.empty())
@@ -166,7 +166,7 @@ start:
 	return strResult;
 }
 
-std::string NumberTranscriber::Contract(const std::string& phrase)
+std::string NumberTranscriber::ToNumber(const std::string& phrase)
 {
 	std::string strResult;
 	if (phrase.empty())
