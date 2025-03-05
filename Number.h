@@ -97,11 +97,13 @@ public:
 
     Number() : m_bNeg(false), m_bNAN(true) {};
 
-    Number(const char* pstrNumber) { ToBinary(pstrNumber); }
+    Number(const char* pnum) { ToBinary(pnum); }
 
-    Number(const std::string& strNumber) { ToBinary(strNumber); }
+    Number(const std::string& number) { ToBinary(number); }
 
-    Number(const int32_t iNumber) { Convert(iNumber); }
+    Number(const int32_t u) { Convert(u); }
+
+    Number(const int64_t u) { Convert(u); }
 
     Number(DATA ch, size_t size)
     {
@@ -258,40 +260,56 @@ protected:
 
     // Helper to convert to the internal format
 #if BITWIDTH == 32
-    void Convert(const int32_t iNumber)
+
+    // 32 bit signed quantities
+    void Convert(const int32_t u)
     {
         m_bNAN = false;
 
         m_Bytes.resize(2);
-        m_Bytes[0] = (uint32_t)(iNumber); // 32
+        m_Bytes[0] = (uint32_t)(u);
 
-        m_bNeg = iNumber < 0;
+        m_bNeg = u < 0;
         m_Bytes[1] = m_bNeg ? NTH : 0;
     }
-#elif BITWIDTH == 16
-    void Convert(const int32_t iNumber)
+
+    // 64 bit signed quantities
+    void Convert(const int64_t u)
     {
         m_bNAN = false;
 
         m_Bytes.resize(3);
-        m_Bytes[0] = ((uint32_t)(iNumber)) & 0x0000FFFF; // 16
-        m_Bytes[1] = ((uint32_t)(iNumber) >> 0x10); // 32
 
-        m_bNeg = iNumber < 0;
+        m_Bytes[0] = ((uint32_t)(u)) & 0x00000000FFFFFFFF;
+        m_Bytes[1] = ((uint32_t)((u) >> BITWIDTH));
+
+        m_bNeg = u < 0;
+        m_Bytes[2] = m_bNeg ? NTH : 0;
+    }
+#elif BITWIDTH == 16
+    void Convert(const int32_t u)
+    {
+        m_bNAN = false;
+
+        m_Bytes.resize(3);
+        m_Bytes[0] = ((uint32_t)(u)) & 0x0000FFFF; // 16
+        m_Bytes[1] = ((uint32_t)(u) >> 0x10); // 32
+
+        m_bNeg = u < 0;
         m_Bytes[2] = m_bNeg ? NTH : 0;
     }
 #elif BITWIDTH == 8
-    void Convert(const int32_t iNumber)
+    void Convert(const int32_t u)
     {
         m_bNAN = false;
 
         m_Bytes.resize(5);
-        m_Bytes[0] = (uint32_t)(iNumber) & 0xFF;
-        m_Bytes[1] = ((uint32_t)(iNumber) >> 0x08) & 0xFF;
-        m_Bytes[2] = ((uint32_t)(iNumber) >> 0x10) & 0xFF;
-        m_Bytes[3] = (uint32_t)(iNumber) >> 0x18;
+        m_Bytes[0] = (uint32_t)(u) & 0xFF;
+        m_Bytes[1] = ((uint32_t)(u) >> 0x08) & 0xFF;
+        m_Bytes[2] = ((uint32_t)(u) >> 0x10) & 0xFF;
+        m_Bytes[3] = (uint32_t)(u) >> 0x18;
 
-        m_Bytes[4] = (m_bNeg = iNumber < 0) ? NTH : 0;
+        m_Bytes[4] = (m_bNeg = u < 0) ? NTH : 0;
     }
 #endif
 
@@ -774,19 +792,24 @@ public:
     }
 
 public:
-    void operator = (const int32_t iNumber)
+    void operator = (const int64_t u)
     {
-        Convert(iNumber);
+        Convert(u);
     }
 
-    void operator = (const std::string& strNumber)
+    void operator = (const int32_t u)
     {
-        ToBinary(strNumber);
+        Convert(u);
     }
 
-    void operator = (const char* pstrNumber)
+    void operator = (const std::string& number)
     {
-        ToBinary(pstrNumber);
+        ToBinary(number);
+    }
+
+    void operator = (const char* pnumber)
+    {
+        ToBinary(pnumber);
     }
 
     bool operator == (const Number& rhs) const

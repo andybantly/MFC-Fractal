@@ -106,7 +106,7 @@ BOOL CFractalApp::InitInstance()
 	// Change the registry key under which our settings are stored
 	// TODO: You should modify this string to be something appropriate
 	// such as the name of your company or organization
-	SetRegistryKey(_T("AndrewBantly"));
+	SetRegistryKey(_T("(C) Andrew Bantly"));
 	LoadStdProfileSettings(4);  // Load standard INI file options (including MRU)
 
 	m_pDocManager = new CFractalDocManager();

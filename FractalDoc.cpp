@@ -140,6 +140,12 @@ CFractalDoc::CFractalDoc()
 	m_dXMax = 1.0;
 	m_dYMin = -1.0;
 	m_dYMax = 1.0;
+
+	m_NXMn = -20000000000000000;
+	m_NXMx =  10000000000000000;
+	m_NYMn = -10000000000000000;
+	m_NYMx =  10000000000000000;
+
 	m_iHeight = 480;
 	m_iWidth = (int)((double)m_iHeight * fabs((m_dXMax - m_dXMin) / (m_dYMax - m_dYMin)));
 	m_dP = 0.238498;

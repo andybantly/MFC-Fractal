@@ -18,6 +18,7 @@
 #include "BitmapIcon.h"
 #include "FractalBase.h"
 #include "cpu.h"
+#include "Number.h"
 
 class CFractalDoc : public CDocument
 {
@@ -207,7 +208,12 @@ protected:
 	BOOL m_bRed,m_bGreen,m_bBlue,m_bDropUnused,m_bSmooth,m_bSortOrder,m_bGradient,m_bBase,m_bBaseColor,m_bOrbitColor;
 	COLORREF m_RGB1,m_RGB2,m_RGB3,m_RGB4,m_RGB5,m_RGB6,m_RGBBase;
 	int m_RR,m_RG,m_RB;
-	double m_dXScale,m_dYScale,m_dBailRadius,m_dXMin,m_dXMax,m_dYMin,m_dYMax,m_dP,m_dQ,m_dStep;
+	double m_dXScale, m_dYScale, m_dBailRadius, m_dXMin, m_dXMax, m_dYMin, m_dYMax;
+	double m_dP, m_dQ;
+	double m_dStep;
+
+	Number m_NXSC, m_NYSC, m_BR, m_NXMn, m_NXMx, m_NYMn, m_NYMx, m_NP, m_NQ, m_NS, m_NTX, m_NTY;
+
 	std::vector<std::vector<BYTE> > m_RGB;
 	CString m_csImage,m_csImage2;
 	BOOL m_bUseImage,m_bUseImage2;
