@@ -212,7 +212,9 @@ protected:
 	double m_dP, m_dQ;
 	double m_dStep;
 
-	Number m_NXSC, m_NYSC, m_BR, m_NXMn, m_NXMx, m_NYMn, m_NYMx, m_NP, m_NQ, m_NS, m_NTX, m_NTY;
+public:
+	Number m_NW, m_NH, m_NXSc, m_NYSc, m_BR, m_NXMn, m_NXMx, m_NYMn, m_NYMx, m_NP, m_NQ, m_NS, m_NTX, m_NTY;
+protected:
 
 	std::vector<std::vector<BYTE> > m_RGB;
 	CString m_csImage,m_csImage2;

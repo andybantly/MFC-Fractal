@@ -883,17 +883,31 @@ void CFractalView::OnMouseMove(UINT nFlags, CPoint point)
 	double XMax = pDoc->GetXMax();
 	double YMin = pDoc->GetYMin();
 	double YMax = pDoc->GetYMax();
+
 	double deltaP = (XMax - XMin) / (double)MC;
 	double deltaQ = (YMax - YMin) / (double)MR;
+	
+	Number NW = (int64_t)pDoc->GetWidth();
+	Number NH = (int64_t)pDoc->GetHeight();
+	Number NP = (pDoc->m_NXMx - pDoc->m_NXMn) / NW;
+	Number NQ = (pDoc->m_NYMx - pDoc->m_NYMn) / NH;
+
+	CString cW((NW.ToDisplay()).c_str());
+	CString cH((NH.ToDisplay()).c_str());
 
 	CString csCoord,csXMin,csYMin,csXMax,csYMax;
 	if (!m_bLButtonDown)
 	{
+		Number NXMin = pDoc->m_NXMn + (NP * Number((int64_t)(Pt.x)));
+		Number NYMin = pDoc->m_NYMn + (NQ * Number((int64_t)(Pt.y)));
+
 		XMin = XMin + (double)Pt.x * deltaP;
 		YMin = YMin + (double)Pt.y * deltaQ;
+
 		csXMin.Format(_T("%.15f"),XMin);csXMin.TrimRight(L'0');csXMin.TrimRight(L'.');
 		csYMin.Format(_T("%.15f"),YMin);csYMin.TrimRight(L'0');csYMin.TrimRight(L'.');
-		csCoord.Format(_T("(%s,%s)\n"),csXMin,csYMin);
+
+		csCoord.Format(_T("(%s,%s)     (%s,%s)"),csXMin,csYMin,CString(NXMin.ToDisplay().c_str()),CString(NYMin.ToDisplay().c_str()));
 	}
 	else
 	{
@@ -903,11 +917,20 @@ void CFractalView::OnMouseMove(UINT nFlags, CPoint point)
 		XMin = XMin + (double)Rect.left * deltaP;
 		YMax = YMin + (double)Rect.bottom * deltaQ;
 		YMin = YMin + (double)Rect.top * deltaQ;
+
+		Number NXMax = pDoc->m_NXMn + (NP * Number((int64_t)(Rect.right)));
+		Number NXMin = pDoc->m_NXMn + (NP * Number((int64_t)(Rect.left)));
+		Number NYMax = pDoc->m_NYMn + (NQ * Number((int64_t)(Rect.bottom)));
+		Number NYMin = pDoc->m_NYMn + (NQ * Number((int64_t)(Rect.top)));
+
 		csXMin.Format(_T("%.15f"),XMin);csXMin.TrimRight(L'0');csXMin.TrimRight(L'.');
 		csYMin.Format(_T("%.15f"),YMin);csYMin.TrimRight(L'0');csYMin.TrimRight(L'.');
 		csXMax.Format(_T("%.15f"),XMax);csXMax.TrimRight(L'0');csXMax.TrimRight(L'.');
 		csYMax.Format(_T("%.15f"),YMax);csYMax.TrimRight(L'0');csYMax.TrimRight(L'.');
-		csCoord.Format(_T("(%s,%s) - (%s,%s)\n"),csXMin,csYMin,csXMax,csYMax);
+
+		csCoord.Format(_T("(%s,%s) - (%s,%s)     (%s,%s) - (%s,%s)"),csXMin,csYMin,csXMax,csYMax,
+			CString(NXMin.ToDisplay().c_str()), CString(NYMin.ToDisplay().c_str()),
+			CString(NXMax.ToDisplay().c_str()), CString(NYMax.ToDisplay().c_str()));
 	}
 
 	CMainFrame * pMainFrame = (CMainFrame *)(AfxGetApp()->GetMainWnd());
