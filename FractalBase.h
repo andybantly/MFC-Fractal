@@ -26,6 +26,7 @@ Copyright(C) 2012 Andrew Scott Bantly
 
 #pragma once
 
+#include <ostream>
 #include <math.h>
 #include "FractalParm.h"
 

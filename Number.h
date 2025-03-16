@@ -1,9 +1,34 @@
+/*
+Andrew Scott Bantly's Software License Agreement
+Version 1.0
+
+Copyright(C) 2012 Andrew Scott Bantly
+
+1. Permission and Restrictions:
+   - This software is proprietary and is provided "as is."
+   - No individual or organization may copy, modify, distribute, or use this software or its derivatives without prior written consent from Andrew Scott Bantly.
+   - Usage in commercial, educational, or personal projects is strictly prohibited without explicit permission from Andrew Scott Bantly
+
+2. Limited Access :
+   - Access to the source code is granted for reference purposes only.
+   - Redistribution of the source code or its compiled binaries, whether modified or unmodified, is expressly forbidden.
+
+3. Liability Disclaimer :
+   - This software is provided without warranty of any kind, either express or implied, including but not limited to the warranties of merchantability, fitness for a particular purpose, or noninfringement.
+   - Under no circumstances shall Andrew Scott Bantly be liable for any damages, including incidental, special, or consequential damages arising out of or in connection with the use of this software.
+
+4. Violation of Terms :
+   - Any unauthorized use, modification, or distribution of this software will result in immediate revocation of any implied permissions and may lead to legal action.
+
+5. Jurisdiction :
+   - This license shall be governed by the laws of The United States of America.
+*/
+
 #pragma once
 #include "Constants.h"
 #include <map>
 #include <vector>
 #include <string>
-#include <ostream>
 #include <mutex>
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -38,14 +63,14 @@ typedef uint8_t BNUM;
 // The internal type
 typedef uint64_t UNUM;
 
-const static UNUM _pow[BITWIDTH] = {               0x1,               0x2,                0x4,                0x8,               0x10,               0x20,               0x40,               0x80,    //  8 bits
-                                                 0x100,             0x200,              0x400,              0x800,             0x1000,             0x2000,             0x4000,             0x8000,    // 16 bits
-                                               0x10000,           0x20000,            0x40000,            0x80000,           0x100000,           0x200000,           0x400000,           0x800000,    // 24 bits
-                                             0x1000000,         0x2000000,          0x4000000,          0x8000000,         0x10000000,         0x20000000,         0x40000000,         0x80000000,    // 32 bits
-                                           0x100000000,       0x200000000,        0x400000000,        0x800000000,       0x1000000000,       0x2000000000,       0x4000000000,       0x8000000000,    // 40 bits
-                                         0x10000000000,     0x20000000000,      0x40000000000,      0x80000000000,     0x100000000000,     0x200000000000,     0x400000000000,     0x800000000000,    // 48 bits
-                                       0x1000000000000,   0x2000000000000,    0x4000000000000,    0x8000000000000,   0x10000000000000,   0x20000000000000,   0x40000000000000,   0x80000000000000,    // 56 bits
-                                     0x100000000000000, 0x200000000000000,  0x400000000000000,  0x800000000000000, 0x1000000000000000, 0x2000000000000000, 0x4000000000000000, 0x8000000000000000 };  // 64 bits
+const static UNUM _pow[BITWIDTH] = {               0x1,               0x2,               0x4,               0x8,               0x10,               0x20,               0x40,               0x80,    //  8 bits
+                                                 0x100,             0x200,             0x400,             0x800,             0x1000,             0x2000,             0x4000,             0x8000,    // 16 bits
+                                               0x10000,           0x20000,           0x40000,           0x80000,           0x100000,           0x200000,           0x400000,           0x800000,    // 24 bits
+                                             0x1000000,         0x2000000,         0x4000000,         0x8000000,         0x10000000,         0x20000000,         0x40000000,         0x80000000,    // 32 bits
+                                           0x100000000,       0x200000000,       0x400000000,       0x800000000,       0x1000000000,       0x2000000000,       0x4000000000,       0x8000000000,    // 40 bits
+                                         0x10000000000,     0x20000000000,     0x40000000000,     0x80000000000,     0x100000000000,     0x200000000000,     0x400000000000,     0x800000000000,    // 48 bits
+                                       0x1000000000000,   0x2000000000000,   0x4000000000000,   0x8000000000000,   0x10000000000000,   0x20000000000000,   0x40000000000000,   0x80000000000000,    // 56 bits
+                                     0x100000000000000, 0x200000000000000, 0x400000000000000, 0x800000000000000, 0x1000000000000000, 0x2000000000000000, 0x4000000000000000, 0x8000000000000000 };  // 64 bits
 #endif
 #ifdef IS_32BIT
 
@@ -76,7 +101,7 @@ class NumberTranscriber
     NumberTranscriber() { init(); }
     NumberTranscriber(const NumberTranscriber&) = delete;
     NumberTranscriber& operator=(const NumberTranscriber&) = delete;
-
+        
     static std::unique_ptr<NumberTranscriber> instance;
     static std::mutex mutex;
     static std::map<std::string, std::string, NumberTranscriber::cilt> mapWordTo99;
@@ -99,9 +124,9 @@ private:
         alignas(8)
 #endif
 #ifdef IS_64BIT
-            alignas(64)
+        alignas(64)
 #endif
-            UNUM U;
+        UNUM U;
         BNUM F;
 
         DATA(UNUM u = 0, BNUM f = 0) : U(u), F(f) {};
@@ -131,7 +156,7 @@ private:
             {
                 UNUM ui = _pow[uj];
                 Out.U |= (Out.F ^ (((U & ui) >> uj) ^ ((data.U & ui) >> uj))) << uj;                                                                         // SUM:   Kerry-in XOR (A XOR B)
-                Out.F = (BNUM)(((U & ui) >> uj) & Out.F) | (BNUM)(((U & ui) >> uj) & (BNUM)((data.U & ui) >> uj)) | (BNUM)(((data.U & ui) >> uj) & Out.F);  // CARRY: Kerry-out AB OR BC OR ACin
+                Out.F  = (BNUM)(((U & ui) >> uj) & Out.F) | (BNUM)(((U & ui) >> uj) & (BNUM)((data.U & ui) >> uj)) | (BNUM)(((data.U & ui) >> uj) & Out.F);  // CARRY: Kerry-out AB OR BC OR ACin
             }
             return Out;
         }
@@ -144,7 +169,7 @@ private:
             {
                 UNUM ui = _pow[uj];
                 Out.U |= (Out.F ^ (((U & ui) >> uj) ^ ((data.U & ui) >> uj))) << uj;                                                                          // DIFFERENCE: (A XOR B) XOR Borrow-in
-                Out.F = (BNUM)(~((U & ui) >> uj) & Out.F) | (BNUM)(~((U & ui) >> uj) & (BNUM)((data.U & ui) >> uj)) | (BNUM)(((data.U & ui) >> uj) & Out.F); // BORROW: A'Borrow-in OR A'B OR AB (' = 2s complement)
+                Out.F  = (BNUM)(~((U & ui) >> uj) & Out.F) | (BNUM)(~((U & ui) >> uj) & (BNUM)((data.U & ui) >> uj)) | (BNUM)(((data.U & ui) >> uj) & Out.F); // BORROW: A'Borrow-in OR A'B OR AB (' = 2s complement)
             }
             return Out;
         }
@@ -199,10 +224,10 @@ protected:
 
         bool bNeg = false;
         std::string::iterator it = strNumber.begin();
-        if (*it == '-')
+        if (*it == '-') 
         {
-            bNeg = true;
-            if (++it == strNumber.end())
+            bNeg = true; 
+            if (++it == strNumber.end()) 
                 throw std::exception();
         }
 
@@ -438,7 +463,7 @@ public:
         if (m_bNan || rhs.m_bNan)
             throw std::exception();
 
-        Number prod(0);
+        Number prod(0); 
         if (*this == prod || rhs == prod)
             return prod;
 
@@ -1180,34 +1205,40 @@ protected:
         {
             size_t tmp = data;
             size_t sb = nbits / BITWIDTH;
-            if (sb)
+            if (sb >= m_Data.size())
             {
-                for (; data != -1; --data)
-                {
-                    if (data >= sb)
-                    {
-                        m_Data[data].U = m_Data[data - sb].U;
-                        m_Data[data - sb].U = 0;
-                    }
-                }
-                nbits = nbits % BITWIDTH;
+                SetSize(m_Data.size() + sb);
+                return Shl(stbit, nbits);
             }
+
+            for (; data != -1; --data)
+            {
+                if (data >= sb)
+                {
+                    m_Data[data].U = m_Data[data - sb].U;
+                    m_Data[data - sb].U = 0;
+                }
+            }
+            nbits = nbits % BITWIDTH;
             data = tmp;
         }
 
-        for (; data != stn; --data)
+        if (nbits)
         {
+            for (; data != stn; --data)
+            {
+                m_Data[data].U <<= nbits;
+                m_Data[data].U |= (m_Data[data - 1].U >> (BITWIDTH - nbits));
+            }
             m_Data[data].U <<= nbits;
-            m_Data[data].U |= (m_Data[data - 1].U >> (BITWIDTH - nbits));
         }
-        m_Data[data].U <<= nbits;
 
         bool bNeg = (m_Data[m_Data.size() - 1].U & AND) >> SHFT ? true : false;
         if (m_bNeg != bNeg)
         {
             // shift caused sign change
             if (!m_bNeg)
-                SetSize(GetSize() + 1);
+                SetSize(m_Data.size() + 1);
         }
     }
 

@@ -29,6 +29,7 @@ Copyright(C) 2012 Andrew Scott Bantly
 #include "BitmapIcon.h"
 #include "cpu.h"
 #include "resource.h"
+#include <ostream>
 
 class CColorOp
 {
