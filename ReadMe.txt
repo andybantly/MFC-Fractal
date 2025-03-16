@@ -1,4 +1,3 @@
-/*
 Andrew Scott Bantly's Software License Agreement
 Version 1.0
 
@@ -15,11 +14,10 @@ Copyright(C) 2012 Andrew Scott Bantly
 
 3. Liability Disclaimer :
    - This software is provided without warranty of any kind, either express or implied, including but not limited to the warranties of merchantability, fitness for a particular purpose, or noninfringement.
-   - Under no circumstances shall[Your Name or Organization] be liable for any damages, including incidental, special, or consequential damages arising out of or in connection with the use of this software.
+   - Under no circumstances shallAndrew Scott Bantly be liable for any damages, including incidental, special, or consequential damages arising out of or in connection with the use of this software.
 
 4. Violation of Terms :
    - Any unauthorized use, modification, or distribution of this software will result in immediate revocation of any implied permissions and may lead to legal action.
 
 5. Jurisdiction :
    - This license shall be governed by the laws of The United States of America.
-*/
