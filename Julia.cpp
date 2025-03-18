@@ -129,7 +129,7 @@ void CRenderADJuliaFractal::operator() (int RowBeg,int RowEnd)
 	BOOL bBaseColor = m_FractalParm.GetBaseColor();
 	BOOL bOrbitColor = m_FractalParm.GetOrbitColor();
 	int nMaxCalc = m_FractalParm.GetMaxCalc();
-	double dRadScale = (double)(nMaxCalc) / (2.0 * atan(1.0) * 4.0);
+	double dRadScale = (double)(nMaxCalc) / g_d2Pi;
 
 	int MC = m_FractalParm.GetMC();
 	int MR = m_FractalParm.GetMR();
@@ -177,7 +177,7 @@ void CRenderStepADJuliaFractal::operator() (int RowBeg,int RowEnd)
 	BOOL bOrbitColor = m_FractalParm.GetOrbitColor();
 	double dStep = m_FractalParm.GetStep();
 	int nMaxCalc = m_FractalParm.GetMaxCalc();
-	double dRadScale = (double)(nMaxCalc) / (2.0 * atan(1.0) * 4.0);
+	double dRadScale = (double)(nMaxCalc) / g_d2Pi;
 
 	int MC = m_FractalParm.GetMC();
 	int MR = m_FractalParm.GetMR();
@@ -307,7 +307,7 @@ void CRenderADJuliaDragonFractal::operator() (int RowBeg,int RowEnd)
 	BOOL bBaseColor = m_FractalParm.GetBaseColor();
 	BOOL bOrbitColor = m_FractalParm.GetOrbitColor();
 	int nMaxCalc = m_FractalParm.GetMaxCalc();
-	double dRadScale = (double)(nMaxCalc) / (2.0 * atan(1.0) * 4.0);
+	double dRadScale = (double)(nMaxCalc) / g_d2Pi;
 
 	int MC = m_FractalParm.GetMC();
 	int MR = m_FractalParm.GetMR();
@@ -355,7 +355,7 @@ void CRenderStepADJuliaDragonFractal::operator() (int RowBeg,int RowEnd)
 	BOOL bOrbitColor = m_FractalParm.GetOrbitColor();
 	double dStep = m_FractalParm.GetStep();
 	int nMaxCalc = m_FractalParm.GetMaxCalc();
-	double dRadScale = (double)(nMaxCalc) / (2.0 * atan(1.0) * 4.0);
+	double dRadScale = (double)(nMaxCalc) / g_d2Pi;
 
 	int MC = m_FractalParm.GetMC();
 	int MR = m_FractalParm.GetMR();
@@ -486,7 +486,7 @@ void CRenderADJuliaPhoenixFractal::operator() (int RowBeg,int RowEnd)
 	BOOL bBaseColor = m_FractalParm.GetBaseColor();
 	BOOL bOrbitColor = m_FractalParm.GetOrbitColor();
 	int nMaxCalc = m_FractalParm.GetMaxCalc();
-	double dRadScale = (double)(nMaxCalc) / (2.0 * atan(1.0) * 4.0);
+	double dRadScale = (double)(nMaxCalc) / g_d2Pi;
 
 	int MC = m_FractalParm.GetMC();
 	int MR = m_FractalParm.GetMR();
@@ -534,7 +534,7 @@ void CRenderStepADJuliaPhoenixFractal::operator() (int RowBeg,int RowEnd)
 	BOOL bOrbitColor = m_FractalParm.GetOrbitColor();
 	double dStep = m_FractalParm.GetStep();
 	int nMaxCalc = m_FractalParm.GetMaxCalc();
-	double dRadScale = (double)(nMaxCalc) / (2.0 * atan(1.0) * 4.0);
+	double dRadScale = (double)(nMaxCalc) / g_d2Pi;
 
 	int MC = m_FractalParm.GetMC();
 	int MR = m_FractalParm.GetMR();

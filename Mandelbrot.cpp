@@ -138,7 +138,7 @@ void CRenderADMandelbrotFractal::operator() (int RowBeg,int RowEnd)
 	double P = m_FractalParm.GetXMin();
 	int nMaxIter = m_FractalParm.GetIterations();
 	int nMaxCalc = m_FractalParm.GetMaxCalc();
-	double dRadScale = (double)(nMaxCalc) / (2.0 * atan(1.0) * 4.0);
+	double dRadScale = (double)(nMaxCalc) / g_d2Pi;
 
 	// Calculate the set values for each pixel across the columns and down the rows
 	for (int C = 1;C <= MC;++C)
@@ -187,7 +187,7 @@ void CRenderStepADMandelbrotFractal::operator() (int RowBeg,int RowEnd)
 	double P = m_FractalParm.GetXMin();
 	int nMaxIter = m_FractalParm.GetIterations();
 	int nMaxCalc = m_FractalParm.GetMaxCalc();
-	double dRadScale = (double)(nMaxCalc) / (2.0 * atan(1.0) * 4.0);
+	double dRadScale = (double)(nMaxCalc) / g_d2Pi;
 
 	// Calculate the set values for each pixel across the columns and down the rows
 	for (int C = 1;C <= MC;++C)
@@ -318,7 +318,7 @@ void CRenderADMandelbrotDragonFractal::operator() (int RowBeg,int RowEnd)
 	double P = m_FractalParm.GetXMin();
 	int nMaxIter = m_FractalParm.GetIterations();
 	int nMaxCalc = m_FractalParm.GetMaxCalc();
-	double dRadScale = (double)nMaxCalc / (2.0 * atan(1.0) * 4.0);
+	double dRadScale = (double)nMaxCalc / g_d2Pi;
 
 	// Calculate the set values for each pixel across the columns and down the rows
 	for (int C = 1;C <= MC;++C)
@@ -367,7 +367,7 @@ void CRenderStepADMandelbrotDragonFractal::operator() (int RowBeg,int RowEnd)
 	double P = m_FractalParm.GetXMin();
 	int nMaxIter = m_FractalParm.GetIterations();
 	int nMaxCalc = m_FractalParm.GetMaxCalc();
-	double dRadScale = (double)nMaxCalc / (2.0 * atan(1.0) * 4.0);
+	double dRadScale = (double)nMaxCalc / g_d2Pi;
 
 	// Calculate the set values for each pixel across the columns and down the rows
 	for (int C = 1;C <= MC;++C)
@@ -498,7 +498,7 @@ void CRenderADMandelbrotPhoenixFractal::operator() (int RowBeg,int RowEnd)
 	double P = m_FractalParm.GetXMin();
 	int nMaxIter = m_FractalParm.GetIterations();
 	int nMaxCalc = m_FractalParm.GetMaxCalc();
-	double dRadScale = (double)(nMaxCalc) / (2.0 * atan(1.0) * 4.0);
+	double dRadScale = (double)(nMaxCalc) / g_d2Pi;
 
 	// Calculate the set values for each pixel across the columns and down the rows
 	for (int C = 1;C <= MC;++C)
@@ -547,7 +547,7 @@ void CRenderStepADMandelbrotPhoenixFractal::operator() (int RowBeg,int RowEnd)
 	double P = m_FractalParm.GetXMin();
 	int nMaxIter = m_FractalParm.GetIterations();
 	int nMaxCalc = m_FractalParm.GetMaxCalc();
-	double dRadScale = (double)(nMaxCalc) / (2.0 * atan(1.0) * 4.0);
+	double dRadScale = (double)(nMaxCalc) / g_d2Pi;
 
 	// Calculate the set values for each pixel across the columns and down the rows
 	for (int CX = 1,C = 1;CX <= MC;++CX)
@@ -678,7 +678,7 @@ void CRenderADMandelbrotPhoenix2Fractal::operator() (int RowBeg,int RowEnd)
 	double P = m_FractalParm.GetXMin();
 	int nMaxIter = m_FractalParm.GetIterations();
 	int nMaxCalc = m_FractalParm.GetMaxCalc();
-	double dRadScale = (double)(nMaxCalc) / (2.0 * atan(1.0) * 4.0);
+	double dRadScale = (double)(nMaxCalc) / g_d2Pi;
 
 	// Calculate the set values for each pixel across the columns and down the rows
 	for (int C = 1;C <= MC;++C)
@@ -727,7 +727,7 @@ void CRenderStepADMandelbrotPhoenix2Fractal::operator() (int RowBeg,int RowEnd)
 	double P = m_FractalParm.GetXMin();
 	int nMaxIter = m_FractalParm.GetIterations();
 	int nMaxCalc = m_FractalParm.GetMaxCalc();
-	double dRadScale = (double)(nMaxCalc) / (2.0 * atan(1.0) * 4.0);
+	double dRadScale = (double)(nMaxCalc) / g_d2Pi;
 
 	// Calculate the set values for each pixel across the columns and down the rows
 	for (int C = 1;C <= MC;++C)

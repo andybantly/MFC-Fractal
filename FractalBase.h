@@ -29,10 +29,11 @@ Copyright(C) 2012 Andrew Scott Bantly
 #include <ostream>
 #include <math.h>
 #include "FractalParm.h"
+#include "corecrt_math_defines.h"
 
 extern CComAutoCriticalSection g_MTBlock;
 
-const double g_d2Pi = 8.0 * atan(1.0);
+const double g_d2Pi = 2.0 * M_PI;
 
 // Class for common calculations
 class CCalcBase
