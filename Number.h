@@ -110,7 +110,7 @@ const static UNUM _pow[BITWIDTH] = { 0x1,               0x2,               0x4, 
 
 // The internal type
 typedef uint32_t UNUM;
-typedef int64_t SNUM;
+typedef int32_t SNUM;
 
 const static UNUM _pow[BITWIDTH] = { 0x1,               0x2,               0x4,               0x8,               0x10,               0x20,               0x40,               0x80,   //  8 bits
                                                  0x100,             0x200,             0x400,             0x800,             0x1000,             0x2000,             0x4000,             0x8000,   // 16 bits
@@ -125,7 +125,7 @@ const static UNUM _pow[BITWIDTH] = { 0x1,               0x2,               0x4, 
 
 // The internal type
 typedef uint16_t UNUM;
-typedef int32_t SNUM;
+typedef int16_t SNUM;
 
 const static UNUM _pow[BITWIDTH] = { 0x1,               0x2,               0x4,               0x8,               0x10,               0x20,               0x40,               0x80,   //  8 bits
                                                  0x100,             0x200,             0x400,             0x800,             0x1000,             0x2000,             0x4000,             0x8000 }; // 16 bits
@@ -144,7 +144,7 @@ const static UNUM _pow[BITWIDTH] = { 0x1,               0x2,               0x4, 
 
 // The internal type
 typedef uint32_t UNUM;
-typedef int64_t SNUM;
+typedef int32_t SNUM;
 
 const static UNUM _pow[BITWIDTH] = { 0x1,               0x2,               0x4,               0x8,               0x10,               0x20,               0x40,               0x80,   //  8 bits
                                                  0x100,             0x200,             0x400,             0x800,             0x1000,             0x2000,             0x4000,             0x8000,   // 16 bits
@@ -159,7 +159,7 @@ const static UNUM _pow[BITWIDTH] = { 0x1,               0x2,               0x4, 
 
 // The internal type
 typedef uint16_t UNUM;
-typedef int32_t SNUM;
+typedef int16_t SNUM;
 
 const static UNUM _pow[BITWIDTH] = { 0x1,               0x2,               0x4,               0x8,               0x10,               0x20,               0x40,               0x80,   //  8 bits
                                                  0x100,             0x200,             0x400,             0x800,             0x1000,             0x2000,             0x4000,             0x8000 }; // 16 bits
@@ -226,7 +226,7 @@ private:
         }
 #endif // DEBUG
 
-        const bool ispow2() const { return (U > 0) && (U & (U - 1)) == 0; }
+        const bool IsPow2() const { return (U > 0) && (U & (U - 1)) == 0; }
     };
 
 public:
@@ -238,7 +238,7 @@ public:
     Number(const std::string& number) { ToBinary(number); }
 
     // Special helper constructor for twos complement addition
-    Number(const int8_t u, bool bOvf) { Convert(u); m_bOvf = bOvf; }
+    Number(const int8_t u, size_t st) { Convert(u); SetSize(st); m_bOvf = true; }
 
     Number(const int32_t u) { Convert(u); }
 
@@ -261,6 +261,71 @@ public:
     }
 
 protected:
+
+    // Helper to convert to the internal format
+#if BITWIDTH == 64
+    void Convert(const int64_t u)
+    {
+        m_bNan = false;
+        m_bOvf = false;
+
+        m_Data.resize(1);
+
+        m_Data[0] = (UNUM)(u);
+
+        m_bNeg = u < 0;
+    }
+#elif BITWIDTH == 32
+    void Convert(const int32_t u)
+    {
+        m_bNan = false;
+        m_bOvf = false;
+
+        m_Data.resize(1);
+        m_Data[0] = (UNUM)(u);
+
+        m_bNeg = u < 0;
+    }
+
+    void Convert(const int64_t u)
+    {
+        m_bNan = false;
+        m_bOvf = false;
+
+        m_Data.resize(2);
+
+        m_Data[0] = ((UNUM)(u)) & 0x00000000FFFFFFFF;
+        m_Data[1] = ((UNUM)((u) >> 32));
+
+        m_bNeg = u < 0;
+    }
+#elif BITWIDTH == 16
+    void Convert(const int64_t u)
+    {
+        m_bNan = false;
+        m_bOvf = false;
+        m_Data.resize(4);
+
+        m_Data[0] = (u) & 0xFFFF;
+        m_Data[1] = (u >> 16) & 0xFFFF;
+        m_Data[2] = (u >> 32) & 0xFFFF;
+        m_Data[3] = (u >> 48) & 0xFFFF;
+
+        m_bNeg = u < 0;
+    }
+
+    void Convert(const int32_t u)
+    {
+        m_bNan = false;
+        m_bOvf = false;
+
+        m_Data.resize(2);
+        m_Data[0] = ((uint32_t)(u)) & 0x0000FFFF; // 16
+        m_Data[1] = ((uint32_t)(u) >> 0x10); // 32
+
+        m_bNeg = u < 0;
+    }
+#endif
 
     void ToBinary(const std::string& strNumberIn)
     {
@@ -358,77 +423,45 @@ protected:
         m_bNan = false;
         m_bOvf = false;
 
-        if ((m_Data[m_Data.size() - 1].U & AND) >> SHFT ? true : false)
+        if (!bNeg && (m_Data[m_Data.size() - 1].U & AND) >> SHFT ? true : false)
             SetSize(m_Data.size() + 1);
 
         if (bNeg)
             *this = TwosComplement();
     }
 
-    // Helper to convert to the internal format
-#if BITWIDTH == 64
-    void Convert(const int64_t u)
+    const size_t IsPow2() const
     {
-        m_bNan = false;
-        m_bOvf = false;
+        size_t stcnt = 0;
+        size_t stpos = 0;
 
-        m_Data.resize(1);
+        for (size_t st = 0; st < m_Data.size() && stcnt < 2; ++st)
+        {
+            if (m_Data[st].IsPow2())
+            {
+                stpos = st;
+                stcnt++;
+            }
+        }
 
-        m_Data[0] = (UNUM)(u);
+        size_t stbpos = 0;
+        if (stcnt == 1)
+        {
+            for (BNUM uj = 0; uj < BITWIDTH; ++uj)
+            {
+                UNUM ui = _pow[uj];
+                if (m_Data[stpos].U & ui)
+                {
+                    stbpos = BITWIDTH * stpos + uj;
+                    break;
+                }
+            }
 
-        m_bNeg = u < 0;
+            return stbpos;
+        }
+
+        return -1;
     }
-#elif BITWIDTH == 32
-    void Convert(const int32_t u)
-    {
-        m_bNan = false;
-        m_bOvf = false;
-
-        m_Data.resize(1);
-        m_Data[0] = (UNUM)(u);
-
-        m_bNeg = u < 0;
-    }
-
-    void Convert(const int64_t u)
-    {
-        m_bNan = false;
-        m_bOvf = false;
-
-        m_Data.resize(2);
-
-        m_Data[0] = ((UNUM)(u)) & 0x00000000FFFFFFFF;
-        m_Data[1] = ((UNUM)((u) >> 32));
-
-        m_bNeg = u < 0;
-    }
-#elif BITWIDTH == 16
-    void Convert(const int64_t u)
-    {
-        m_bNan = false;
-        m_bOvf = false;
-        m_Data.resize(4);
-
-        m_Data[0] = (u) & 0xFFFF;
-        m_Data[1] = (u >> 16) & 0xFFFF;
-        m_Data[2] = (u >> 32) & 0xFFFF;
-        m_Data[3] = (u >> 48) & 0xFFFF;
-
-        m_bNeg = u < 0;
-    }
-
-    void Convert(const int32_t u)
-    {
-        m_bNan = false;
-        m_bOvf = false;
-
-        m_Data.resize(2);
-        m_Data[0] = ((uint32_t)(u)) & 0x0000FFFF; // 16
-        m_Data[1] = ((uint32_t)(u) >> 0x10); // 32
-
-        m_bNeg = u < 0;
-    }
-#endif
 
 public:
     Number Add(const Number& rhs, size_t st = 0) const
@@ -527,6 +560,18 @@ public:
         size_t l1 = This.Count1();
         size_t r1 = That.Count1();
 
+        if (l1 == 1 || r1 == 1)
+        {
+            size_t stnb = l1 == 1 ? This.IsPow2() : That.IsPow2();
+            prod = l1 == 1 ? That : This;
+            prod.Shl(-1, stnb);
+
+            if (m_bNeg != rhs.m_bNeg)
+                prod = prod.TwosComplement();
+
+            return prod;
+        }
+
         bool bND = l1 > r1;
 
         size_t stMB = bND ? This.m_Data.size() : That.m_Data.size();
@@ -573,17 +618,29 @@ public:
         Number quot(0);
         if (rhs == quot)
             return Number();
+        if (*this == quot)
+            return quot;
 
         size_t stMB = m_Data.size() > rhs.m_Data.size() ? m_Data.size() : rhs.m_Data.size();
 
         Number rem = *this;
         rem.SetSize(stMB);
 
-        Number rhsin = rhs;
+        Number dbl = rhs;
         if (m_bNeg != rhs.m_bNeg)
-            rhsin = rhsin.TwosComplement();
+            dbl = dbl.TwosComplement();
 
-        Number dbl = rhsin;
+        size_t stbpos = dbl.IsPow2();
+        if (stbpos != -1)
+        {
+            if (stbpos)
+                rem >>= stbpos;
+            if (rem == quot)
+                return rem;
+            if (m_bNeg != rhs.m_bNeg)
+                rem = rem.TwosComplement();
+            return rem;
+        }
         dbl.SetSize(stMB);
 
         Number pow(m_bNeg == rhs.m_bNeg ? 1 : -1); pow.SetSize(stMB);
@@ -797,7 +854,7 @@ public:
 
         size_t size = m_Data.size();
         Number Out(0); Out.SetSize(size);
-        const static Number _1(1, true);
+        const static Number _1(1, 1);
 
         Out = BitNot();
         Out += _1;
