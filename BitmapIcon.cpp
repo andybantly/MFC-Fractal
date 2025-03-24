@@ -138,7 +138,7 @@ void CDIBFrame::CreateFrame()
 		m_pBitmapInfoHdr = (BITMAPINFOHEADER*)&(m_pBitmapInfo->bmiHeader);
 		m_pBitmapInfoHdr->biSize = sizeof(BITMAPINFOHEADER);
 		m_pBitmapInfoHdr->biWidth = m_x;
-		m_pBitmapInfoHdr->biHeight = m_y;
+		m_pBitmapInfoHdr->biHeight = -m_y;
 		m_pBitmapInfoHdr->biPlanes = 1;
 		m_pBitmapInfoHdr->biBitCount = m_nBitCount;
 		m_pBitmapInfoHdr->biCompression = BI_RGB;
